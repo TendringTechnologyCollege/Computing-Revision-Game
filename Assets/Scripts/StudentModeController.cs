@@ -9,16 +9,28 @@ public class StudentModeController : MonoBehaviour {
 		private int health;
 		private Sprite characterSprite;
 		private GameObject instance;
-		public void newCharacter(Sprite sprite) {
+		public Character(Sprite sprite) {
 			health = 100;
 			characterSprite = sprite;
-			instance;
-
+			instance = new GameObject("Hello World");
+			instance.AddComponent<SpriteRenderer> ();
+		}
+		public void setHealth(int currentHealth) {
+			health = currentHealth;
+		}
+		public int getHealth() {
+			return health;
+		}
+		public void move() {
+			
+		}
+		public void deactivate() {
+			Destroy (instance);
 		}
 	}
 
-	class Player {
-
+	class Player : Character {
+		public void 
 	}
 
 	class Quiz {
@@ -27,7 +39,7 @@ public class StudentModeController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
+		Character character = new Character ();
 	}
 	
 	// Update is called once per frame
