@@ -11,8 +11,8 @@ public class StudentModeController : MonoBehaviour {
 	private bool iKey;
 	private bool move;
 	private bool gameOver;
-	private Quiz[][] quizArray;
-	private int[][] itemArray;
+	private Quiz[,] quizArray;
+	private int[,] itemArray;
 	private int[] gridPosition;
 	private bool[] directions;
 
@@ -72,6 +72,9 @@ public class StudentModeController : MonoBehaviour {
 	class Quiz {
 		public Character enemy;
 		public int topicNumber;
+		public Quiz (int seed) {
+			topicNumber = seed;
+		}
 	}
 		
 	void Start () {
@@ -80,8 +83,8 @@ public class StudentModeController : MonoBehaviour {
 		iKey = false;
 		move = false;
 		gameOver = false;
-		quizArray = new Quiz[5] [5];
-		itemArray = new int[5] [5];
+		quizArray = new Quiz[5,5];
+		itemArray = new int[5,5];
 		gridPosition = new int[2];
 		directions = new bool[4];
 		StartCoroutine (gameLoop());
@@ -120,14 +123,51 @@ public class StudentModeController : MonoBehaviour {
 			for (int j=0;j<5;j++) {
 				randomNumber = Random.Range (0,20);
 				if (randomNumber > 9) {
-					quizArray [i] [j] = new Quiz (randomNumber - 10);
+					quizArray [i,j] = new Quiz (randomNumber - 10);
 				}
 				randomNumber = Random.Range (0,30);
 				if (randomNumber > 9) {
-					quizArray [i] [j] = new Quiz (randomNumber - 10);
+					quizArray [i,j] = new Quiz (randomNumber - 10);
 				}
 			}
 		}
-		return null;
+		while (!gameOver) {
+			if (quizArray [gridPosition [0],gridPosition [1]] != null) {
+				
+			} else if (itemArray [gridPosition [0],gridPosition [1]] != 0) {
+				
+			} else if (iKey) {
+				
+			}
+			yield return StartCoroutine (mover ());
+			yield return null;
+		}
+		yield return null;
+	}
+
+	public IEnumerator mover() {
+		int x = gridPosition [0];
+		int y = gridPosition [1];
+		directions = new bool[4] {false,false,false,false};
+		while (move = false) {
+			if (directions [0] = true && gridPosition [1] < 4) {
+				gridPosition = new int[2] { x, y + 1 };
+				move = true;
+			} else if (directions [1] == true && gridPosition [1] > 0) {
+				gridPosition = new int[2] { x, y - 1 };
+				move = true;
+			} else if (directions [2] == true && gridPosition [0] > 0) {
+				gridPosition = new int[2] { x - 1, y };
+				move = true;
+			} else if (directions [3] == true && gridPosition [0] < 4) {
+				gridPosition = new int[2] { x + 1, y };
+				move = true;
+			}
+			yield return null;
+		}
+		move = false;
+		directions = new bool[4] { false, false, false, false };
+		player.move(gridPosition[0],gridPosition[1]);
+		yield return null;
 	}
 }
