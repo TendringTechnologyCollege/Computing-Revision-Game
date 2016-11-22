@@ -88,7 +88,27 @@ public class StudentModeController : MonoBehaviour {
 	}
 
 	void Update () {
-	
+		if (Input.GetKeyDown (KeyCode.Return)) {
+			enter = true;
+		}
+		if (Input.GetKeyDown (KeyCode.Space)) {
+			space = true;
+		}
+		if (Input.GetKeyDown (KeyCode.I)) {
+			iKey = true;
+		}
+		if (Input.GetKeyDown (KeyCode.UpArrow)) {
+			directions [0] = true;
+		}
+		if (Input.GetKeyDown (KeyCode.DownArrow)) {
+			directions[1] = true;
+		}
+		if (Input.GetKeyDown (KeyCode.LeftArrow)) {
+			directions[2] = true;
+		}
+		if (Input.GetKeyDown (KeyCode.RightArrow)) {
+			directions[3] = true;
+		}
 	}
 
 	public IEnumerator gameLoop () {
