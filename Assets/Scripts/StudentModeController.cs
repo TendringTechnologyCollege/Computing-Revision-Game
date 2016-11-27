@@ -101,6 +101,7 @@ public class StudentModeController : MonoBehaviour {
 			iKey = true;
 		}
 		if (Input.GetKeyDown (KeyCode.UpArrow)) {
+			Debug.Log ("Up");
 			directions [0] = true;
 		}
 		if (Input.GetKeyDown (KeyCode.DownArrow)) {
@@ -115,7 +116,7 @@ public class StudentModeController : MonoBehaviour {
 	}
 
 	public IEnumerator gameLoop () {
-		Player player = new Player (playerSprite,"Joe");
+		player = new Player (playerSprite,"Joe");
 		gridPosition = new int[2] {0,0};
 		directions = new bool[4] { false, false, false, false };
 		int randomNumber;
@@ -149,24 +150,28 @@ public class StudentModeController : MonoBehaviour {
 		int x = gridPosition [0];
 		int y = gridPosition [1];
 		directions = new bool[4] {false,false,false,false};
-		while (move = false) {
-			if (directions [0] = true && gridPosition [1] < 4) {
-				gridPosition = new int[2] { x, y + 1 };
+		move = false;
+		while (move == false) {
+			if (directions [0] == true && gridPosition [1] < 4) {
+				gridPosition [0] = x;
+				gridPosition [1] = y + 1;
 				move = true;
 			} else if (directions [1] == true && gridPosition [1] > 0) {
-				gridPosition = new int[2] { x, y - 1 };
+				gridPosition [0] = x;
+				gridPosition [1] = y - 1;
 				move = true;
 			} else if (directions [2] == true && gridPosition [0] > 0) {
-				gridPosition = new int[2] { x - 1, y };
+				gridPosition [0] = x - 1;
+				gridPosition [1] = y;
 				move = true;
 			} else if (directions [3] == true && gridPosition [0] < 4) {
-				gridPosition = new int[2] { x + 1, y };
+				gridPosition [0] = x + 1;
+				gridPosition [1] = y;
 				move = true;
 			}
 			yield return null;
 		}
-		move = false;
-		directions = new bool[4] { false, false, false, false };
+		Debug.Log (gridPosition[0] + " " + gridPosition[1]);
 		player.move(gridPosition[0],gridPosition[1]);
 		yield return null;
 	}
