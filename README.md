@@ -1,2 +1,2 @@
 # Computing-Revision-Game
-Revison game to learn Computing
+A game used to assist Students and Teachers in Computing Revision.
