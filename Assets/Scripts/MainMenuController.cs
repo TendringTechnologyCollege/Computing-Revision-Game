@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class MainMenuController : MonoBehaviour {
-
-	public StudentModeController studentScript;
 
 	private bool Up;
 	private bool Down;
@@ -26,8 +25,15 @@ public class MainMenuController : MonoBehaviour {
 	public IEnumerator inputLoop() {
 		while (true) {
 			if (Up) {
-				yield return StartCoroutine (studentScript.gameLoop());
+				Up = false;
+				SceneManager.LoadScene ("Scene_StudentMode", LoadSceneMode.Single);
+				break;
+			} else if (Down) {
+				Down = false;
+				SceneManager.LoadScene ("Scene_StaffMode", LoadSceneMode.Single);
+				break;
 			}
+			yield return null;
 		}
 	}
 }

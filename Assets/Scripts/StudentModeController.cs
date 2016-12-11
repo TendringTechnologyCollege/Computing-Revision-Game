@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class StudentModeController : MonoBehaviour {
 
@@ -137,7 +138,8 @@ public class StudentModeController : MonoBehaviour {
 			} else if (itemArray [gridPosition [0],gridPosition [1]] != 0) {
 				
 			} else if (iKey) {
-				
+				SceneManager.LoadScene ("Scene_Inventory", LoadSceneMode.Additive);
+				iKey = false;
 			}
 			yield return StartCoroutine (mover ());
 			yield return null;
@@ -170,7 +172,6 @@ public class StudentModeController : MonoBehaviour {
 			}
 			yield return null;
 		}
-		Debug.Log (gridPosition[0] + " " + gridPosition[1]);
 		player.move(gridPosition[0],gridPosition[1]);
 		yield return null;
 	}
