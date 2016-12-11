@@ -1,10 +1,9 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\InventoryController.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\_mySQLconnector.cs">
     <Files>
-      <File FileName="Assets\Scripts\MainMenuController.cs" Line="2" Column="1" />
-      <File FileName="Assets\Scripts\StudentModeController.cs" Line="174" Column="4" />
-      <File FileName="Assets\InventoryController.cs" Line="12" Column="18" />
+      <File FileName="Assets\Scripts\_mySQLconnector.cs" Line="18" Column="34" />
+      <File FileName="Assets\Scripts\MainMenuController.cs" Line="22" Column="4" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

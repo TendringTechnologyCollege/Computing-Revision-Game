@@ -45,14 +45,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\InventoryController.cs" />
+     <Compile Include="Assets\Scripts\InventoryController.cs" />
      <Compile Include="Assets\Scripts\MainMenuController.cs" />
      <Compile Include="Assets\Scripts\StudentModeController.cs" />
+     <Compile Include="Assets\Scripts\_mySQLconnector.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.Networking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="MySql.Data">
+ <HintPath>C:/Users/Joe/Documents/Computing/A Level Project/Computing-Revision-Game/Assets/Plugins/MySql.Data.dll</HintPath>
+ </Reference>
+ <Reference Include="system.data">
+ <HintPath>C:/Users/Joe/Documents/Computing/A Level Project/Computing-Revision-Game/Assets/Plugins/system.data.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Drawing">
+ <HintPath>C:/Users/Joe/Documents/Computing/A Level Project/Computing-Revision-Game/Assets/Plugins/System.Drawing.dll</HintPath>
  </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
