@@ -101,7 +101,6 @@ public class StudentModeController : MonoBehaviour {
 			iKey = true;
 		}
 		if (Input.GetKeyDown (KeyCode.UpArrow)) {
-			Debug.Log ("Up");
 			directions [0] = true;
 		}
 		if (Input.GetKeyDown (KeyCode.DownArrow)) {
