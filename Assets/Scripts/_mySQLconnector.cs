@@ -22,7 +22,8 @@ public class _mySQLconnector : MonoBehaviour {
 
 	void Awake () {
 		DontDestroyOnLoad (this.gameObject);
-		connectionString = "Server="+host+";Database="+database+";User="+user+";Password="+password+";Pooling=";
+		connectionString = "Server="+host+";Database="+database+";User="
+			+user+";Password="+password+";Pooling=";
 		if (pooling) {
 			connectionString += "true;";
 		} else {
@@ -34,6 +35,14 @@ public class _mySQLconnector : MonoBehaviour {
 			Debug.Log("MySQL State: "+con.State);
 		} catch (Exception e) {
 			Debug.Log (e);
+		}
+		string query = "SELECT * FROM videogames.games";
+		MySqlCommand cmd = new MySqlCommand (query, con);
+		MySqlDataReader reader = cmd.ExecuteReader();
+		while(reader.Read()) {
+			string someStringFromColumnZero = reader.GetString(0);
+			string someStringFromColumnOne = reader.GetString(1);
+			Debug.Log(someStringFromColumnZero + "," + someStringFromColumnOne);
 		}
 	}
 

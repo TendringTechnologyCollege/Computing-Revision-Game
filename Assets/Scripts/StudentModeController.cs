@@ -7,14 +7,14 @@ public class StudentModeController : MonoBehaviour {
 	public Sprite playerSprite;
 
 	private Player player;
-	private bool enter; 
+	private bool enter; 																// Boolean Key Variables for interactivity 
 	private bool space;
 	private bool iKey;
 	private bool move;
 	private bool gameOver;
-	private Quiz[,] quizArray;
+	private Quiz[,] quizArray;															//Arrays for populating the game map with items and quizzes
 	private int[,] itemArray;
-	private int[] gridPosition;
+	private int[] gridPosition; 														//Arrays for movement
 	private bool[] directions;
 
 	class Character {
@@ -35,7 +35,7 @@ public class StudentModeController : MonoBehaviour {
 			spriteRenderer =  instance.GetComponent<SpriteRenderer>();
 			spriteRenderer.sprite = characterSprite;
 		}
-		public void setHealth(int currentHealth) {
+		public void setHealth(int currentHealth) {										//Setter and Getter for Health
 			health = currentHealth;
 		}
 		public int getHealth() {
@@ -116,7 +116,7 @@ public class StudentModeController : MonoBehaviour {
 	}
 
 	public IEnumerator gameLoop () {
-		player = new Player (playerSprite,"Joe");
+		player = new Player (playerSprite,"Player");
 		gridPosition = new int[2] {0,0};
 		directions = new bool[4] { false, false, false, false };
 		int randomNumber;

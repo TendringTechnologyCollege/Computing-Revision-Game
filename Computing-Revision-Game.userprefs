@@ -2,8 +2,9 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\_mySQLconnector.cs">
     <Files>
-      <File FileName="Assets\Scripts\_mySQLconnector.cs" Line="18" Column="34" />
-      <File FileName="Assets\Scripts\MainMenuController.cs" Line="22" Column="4" />
+      <File FileName="Assets\Scripts\_mySQLconnector.cs" Line="26" Column="17" />
+      <File FileName="Assets\Scripts\MainMenuController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\StudentModeController.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
