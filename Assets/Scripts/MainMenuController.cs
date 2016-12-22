@@ -7,7 +7,7 @@ public class MainMenuController : MonoBehaviour {
 	private bool Up;
 	private bool Down;
 
-	void Start () {
+	void Start () { 
 		Up = false;
 		Down = false;
 		StartCoroutine (inputLoop ());
