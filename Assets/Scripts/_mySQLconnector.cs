@@ -36,14 +36,6 @@ public class _mySQLconnector : MonoBehaviour {
 		} catch (Exception e) {
 			Debug.Log (e);
 		}
-		string query = "SELECT * FROM videogames.games";
-		MySqlCommand cmd = new MySqlCommand (query, con);
-		MySqlDataReader reader = cmd.ExecuteReader();
-		while(reader.Read()) {
-			string someStringFromColumnZero = reader.GetString(0);
-			string someStringFromColumnOne = reader.GetString(1);
-			Debug.Log(someStringFromColumnZero + "," + someStringFromColumnOne);
-		}
 	}
 
 	void OnApplicationQuit () {
@@ -55,7 +47,14 @@ public class _mySQLconnector : MonoBehaviour {
 		}
 	}
 
-	public string GetConnectionState () {
-		return con.State.ToString();
+	public string[][] FindQuestions (int topicNo) {
+		string query = "SELECT question.questionText, question.answer FROM question";
+		MySqlCommand cmd = new MySqlCommand (query, con);
+		MySqlDataReader reader = cmd.ExecuteReader();
+		while(reader.Read()) {
+			string columnZero = reader.GetString(0);
+			string columnOne = reader.GetString(1);
+			Debug.Log(columnZero + ", " + columnOne);
+		}
 	}
 }

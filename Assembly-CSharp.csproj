@@ -47,6 +47,7 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\InventoryController.cs" />
      <Compile Include="Assets\Scripts\MainMenuController.cs" />
+     <Compile Include="Assets\Scripts\QuizController.cs" />
      <Compile Include="Assets\Scripts\StudentModeController.cs" />
      <Compile Include="Assets\Scripts\_mySQLconnector.cs" />
  <Reference Include="UnityEngine.UI">

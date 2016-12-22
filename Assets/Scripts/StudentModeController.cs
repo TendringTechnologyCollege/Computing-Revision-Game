@@ -122,19 +122,20 @@ public class StudentModeController : MonoBehaviour {
 		int randomNumber;
 		for (int i=0;i<5;i++) {
 			for (int j=0;j<5;j++) {
-				randomNumber = Random.Range (0,20);
-				if (randomNumber > 9) {
-					quizArray [i,j] = new Quiz (randomNumber - 10);
+				randomNumber = Random.Range (1,12);
+				if (randomNumber > 6) {
+					quizArray [i,j] = new Quiz (randomNumber - 6);
 				}
 				randomNumber = Random.Range (0,30);
 				if (randomNumber > 9) {
-					quizArray [i,j] = new Quiz (randomNumber - 10);
+					itemArray [i,j] = randomNumber - 10;
 				}
 			}
 		}
+		quizArray [0,0] = null;
 		while (!gameOver) {
 			if (quizArray [gridPosition [0],gridPosition [1]] != null) {
-				
+				SceneManager.LoadScene ("Scene_Quiz", LoadSceneMode.Additive);
 			} else if (itemArray [gridPosition [0],gridPosition [1]] != 0) {
 				
 			} else if (iKey) {
