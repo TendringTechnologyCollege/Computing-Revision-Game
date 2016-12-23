@@ -1,11 +1,11 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\MySQLconnector.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\QuizController.cs">
     <Files>
-      <File FileName="Assets\Scripts\MainMenuController.cs" Line="39" Column="2" />
-      <File FileName="Assets\Scripts\StudentModeController.cs" Line="74" Column="1" />
-      <File FileName="Assets\Scripts\QuizController.cs" Line="17" Column="1" />
-      <File FileName="Assets\Scripts\MySQLconnector.cs" Line="46" Column="66" />
+      <File FileName="Assets\Scripts\QuizController.cs" Line="19" Column="61" />
+      <File FileName="Assets\Scripts\MainMenuController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\StudentModeController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\MySQLconnector.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

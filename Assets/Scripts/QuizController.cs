@@ -12,13 +12,15 @@ public class QuizController : MonoBehaviour {
 	private string questionsString;
 
 	void Start () {
-		questions = DatabaseScript.FindTopicQuestions (2);
+		questions = DatabaseScript.FindTopicQuestions (7);
 		questionsString = "";
-		text.text = questions [0, 1];
-		//for(int i=0;i<questions.Length;i++) {
-		//	questionsString = questionsString + questions [i, 1];
-		//}
-		//text.text = questionsString;
+		Debug.Log (questions.Length);
+		for(int i=0;i<(questions.Length / 3);i++) {
+			questionsString = questionsString + questions [i, 0] + ": ";
+			questionsString = questionsString + questions [i, 1] + "\n";
+			questionsString = questionsString + "A: " + questions [i, 2] + "\n";
+		}
+		text.text = questionsString;
 	}
 
 	void Update () {
