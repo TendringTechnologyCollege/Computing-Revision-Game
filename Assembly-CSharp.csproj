@@ -48,7 +48,6 @@
      <Compile Include="Assets\Scripts\InventoryController.cs" />
      <Compile Include="Assets\Scripts\MainMenuController.cs" />
      <Compile Include="Assets\Scripts\MySQLconnector.cs" />
-     <Compile Include="Assets\Scripts\QuizController.cs" />
      <Compile Include="Assets\Scripts\StudentModeController.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>

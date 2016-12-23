@@ -6,6 +6,9 @@ using UnityEngine.SceneManagement;
 public class StudentModeController : MonoBehaviour {
 
 	public Sprite playerSprite;
+	public Material playerMaterial;
+	public Sprite enemySprite;
+	public Material enemyMaterial;
 	public MySQLconnector databaseScript;
 	public InputField inputField;
 	public Text questionText;
@@ -30,12 +33,14 @@ public class StudentModeController : MonoBehaviour {
 	class Character {
 		private int health;
 		private Sprite characterSprite;
+		private Material characterMaterial;
 		private GameObject instance;
 		private Rigidbody rigidbody;
 		private SpriteRenderer spriteRenderer;
-		public Character(Sprite sprite, string name) { 									//Constructor for New Character
+		public Character(Sprite sprite, string name, Material material) {				//Constructor for New Character
 			health = 100;
 			characterSprite = sprite;
+			characterMaterial = material;
 			instance = new GameObject(name);											//Creates a new game object for the character
 			instance.AddComponent<SpriteRenderer> ();
 			instance.AddComponent<Rigidbody> ();
@@ -44,6 +49,7 @@ public class StudentModeController : MonoBehaviour {
 			rigidbody.useGravity = false;
 			spriteRenderer =  instance.GetComponent<SpriteRenderer>();
 			spriteRenderer.sprite = characterSprite;
+			spriteRenderer.material = material;
 		}
 		public void setHealth(int currentHealth) {										//Setter and Getter for Health
 			health = currentHealth;
@@ -54,15 +60,18 @@ public class StudentModeController : MonoBehaviour {
 		public void move(float x, float y) {
 			rigidbody.position = new Vector3 (x, y, 0f);
 		}
-		public void deactivate() {
-			instance.SetActive (false);
+		public void toggleActive(bool state) {
+			instance.SetActive (state);
+		}
+		public void scaler(float scale) {
+			instance.transform.localScale = new Vector3 (scale, scale, 1);
 		}
 	}
 
 	class Player : Character {															//Player class inheriting character
 		private int attack;
 		private int defence;
-		public Player (Sprite sprite, string name) : base(sprite,name) {
+		public Player (Sprite sprite, string name, Material material) : base(sprite,name, material) {
 			attack = 0;
 			defence = 0;
 		}
@@ -80,10 +89,9 @@ public class StudentModeController : MonoBehaviour {
 		}
 	}
 
-	class Quiz {
-		private Character enemy;
+	class Quiz : Character {
 		private int topicNumber;
-		public Quiz (int _topicNumber) {
+		public Quiz (int _topicNumber, Sprite sprite, string name, Material material) : base (sprite, name, material) {
 			topicNumber = _topicNumber;
 		}
 		public int getTopicNumber () {
@@ -128,12 +136,12 @@ public class StudentModeController : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.RightArrow)) {
 			directions[3] = true;
 		}
-		playerHealthText.text = player.getHealth ().ToString();
+		playerHealthText.text = player.getHealth ().ToString() + " / 100";
 		playerSilder.value = player.getHealth ();
 	}
 
 	public IEnumerator gameLoop () {
-		player = new Player (playerSprite,"Player");
+		player = new Player (playerSprite,"Player",playerMaterial);
 		gridPosition = new int[2] {0,0};
 		directions = new bool[4] { false, false, false, false };
 		int randomNumber;
@@ -141,7 +149,9 @@ public class StudentModeController : MonoBehaviour {
 			for (int j=0;j<5;j++) {
 				randomNumber = Random.Range (1,12);
 				if (randomNumber > 6) {
-					quizArray [i,j] = new Quiz (randomNumber - 6);
+					quizArray [i, j] = new Quiz (randomNumber - 6, enemySprite, "Enemy", enemyMaterial);
+					quizArray [i, j].scaler (0.3f);
+					quizArray [i, j].move (i,j);
 				}
 				randomNumber = Random.Range (0,30);
 				if (randomNumber > 9) {
@@ -155,13 +165,17 @@ public class StudentModeController : MonoBehaviour {
 			int y = gridPosition [1];
 			if (quizArray [x,y] != null) {
 				zoomIn (x, y);
+				quizArray [x, y].scaler (0.3f);
+				quizArray [x, y].move (x+0.3f,y+0.3f);
+				player.scaler (0.3f);
+				player.move (x-0.3f,y-0.05f);
 				int topicNumber = quizArray [x, y].getTopicNumber();
 				yield return StartCoroutine (runQuiz (topicNumber));
+				zoomOut ();
 			} else if (itemArray [gridPosition [0],gridPosition [1]] != 0) {
 				
 			} else if (iKey) {
-				SceneManager.LoadScene ("Scene_Inventory", LoadSceneMode.Additive);
-				iKey = false;
+				
 			}
 			yield return StartCoroutine (mover ());
 			yield return null;
@@ -212,8 +226,13 @@ public class StudentModeController : MonoBehaviour {
 		camera.transform.position = new Vector3 (x,y,-10);
 	} 
 
+	public void zoomOut() {
+		camera.orthographicSize = 2.5f;
+		camera.transform.position = new Vector3 (2,2,-10);
+	}
+
 	public IEnumerator runQuiz(int topicNumber) {
-		questions = databaseScript.findTopicQuestions (11);
+		questions = databaseScript.findTopicQuestions (7);
 		int noQuestions = questions.Length / 3;
 		int count = 0;
 		int playerHealth;
