@@ -1,10 +1,18 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.SceneManagement;
 
 public class StudentModeController : MonoBehaviour {
 
 	public Sprite playerSprite;
+	public MySQLconnector databaseScript;
+	public InputField inputField;
+	public Text questionText;
+	public Image quizBackground;
+	public Slider playerSilder;
+	public Image playerBackground;
+	public Text playerHealthText;
 
 	private Player player;
 	private bool enter; 																// Boolean Key Variables for interactivity 
@@ -16,6 +24,8 @@ public class StudentModeController : MonoBehaviour {
 	private int[,] itemArray;
 	private int[] gridPosition; 														//Arrays for movement
 	private bool[] directions;
+	private string[,] questions;
+	private Camera camera;
 
 	class Character {
 		private int health;
@@ -71,10 +81,13 @@ public class StudentModeController : MonoBehaviour {
 	}
 
 	class Quiz {
-		public Character enemy;
-		public int topicNumber;
-		public Quiz (int seed) {
-			topicNumber = seed;
+		private Character enemy;
+		private int topicNumber;
+		public Quiz (int _topicNumber) {
+			topicNumber = _topicNumber;
+		}
+		public int getTopicNumber () {
+			return topicNumber;
 		}
 	}
 		
@@ -88,6 +101,8 @@ public class StudentModeController : MonoBehaviour {
 		itemArray = new int[5,5];
 		gridPosition = new int[2];
 		directions = new bool[4];
+		camera = this.GetComponent<Camera> ();
+		toggleUI (false);
 		StartCoroutine (gameLoop());
 	}
 
@@ -113,6 +128,8 @@ public class StudentModeController : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.RightArrow)) {
 			directions[3] = true;
 		}
+		playerHealthText.text = player.getHealth ().ToString();
+		playerSilder.value = player.getHealth ();
 	}
 
 	public IEnumerator gameLoop () {
@@ -134,8 +151,12 @@ public class StudentModeController : MonoBehaviour {
 		}
 		quizArray [0,0] = null;
 		while (!gameOver) {
-			if (quizArray [gridPosition [0],gridPosition [1]] != null) {
-				SceneManager.LoadScene ("Scene_Quiz", LoadSceneMode.Additive);
+			int x = gridPosition [0];
+			int y = gridPosition [1];
+			if (quizArray [x,y] != null) {
+				zoomIn (x, y);
+				int topicNumber = quizArray [x, y].getTopicNumber();
+				yield return StartCoroutine (runQuiz (topicNumber));
 			} else if (itemArray [gridPosition [0],gridPosition [1]] != 0) {
 				
 			} else if (iKey) {
@@ -174,6 +195,53 @@ public class StudentModeController : MonoBehaviour {
 			yield return null;
 		}
 		player.move(gridPosition[0],gridPosition[1]);
+		yield return null;
+	}
+
+	public void toggleUI (bool state) {
+		inputField.gameObject.SetActive (state);
+		questionText.gameObject.SetActive (state);
+		quizBackground.gameObject.SetActive (state);
+		playerBackground.gameObject.SetActive (state);
+		playerSilder.gameObject.SetActive (state);
+		playerHealthText.gameObject.SetActive (state);
+	}
+
+	public void zoomIn(int x, int y) {
+		camera.orthographicSize = 0.5f;
+		camera.transform.position = new Vector3 (x,y,-10);
+	} 
+
+	public IEnumerator runQuiz(int topicNumber) {
+		questions = databaseScript.findTopicQuestions (11);
+		int noQuestions = questions.Length / 3;
+		int count = 0;
+		int playerHealth;
+		int playerDefence;
+		toggleUI (true);
+		while (player.getHealth() > 0 && count < noQuestions) {
+			questionText.text = questions [count, 1];
+			enter = false;
+			while (enter == false) {
+				yield return null;
+			}
+			if (inputField.text.ToUpper() == questions [count, 2]) {
+				questionText.text = "Correct";
+			} else {
+				questionText.text = "Incorrect";
+				playerHealth = player.getHealth();
+				playerDefence = player.getDefence ();
+				player.setHealth (playerHealth + playerDefence - 10);
+			}
+			inputField.text = string.Empty;
+			enter = false;
+			while (enter == false) {
+				yield return null;
+			}
+			count++;
+			yield return null;
+		}
+		toggleUI (false);
 		yield return null;
 	}
 }

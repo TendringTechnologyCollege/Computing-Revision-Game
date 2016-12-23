@@ -42,7 +42,7 @@ public class MySQLconnector : MonoBehaviour {
 		}
 	}
 
-	public string[,] FindTopicQuestions (int topicNo) {
+	public string[,] findTopicQuestions (int topicNo) {
 		query = "SELECT question.questionID, question.questionText, " +
 			"question.answer FROM question WHERE question._topicID =" + topicNo;
 		command = new MySqlCommand (query, connection);
@@ -56,12 +56,12 @@ public class MySQLconnector : MonoBehaviour {
 		reader.Close ();
 		reader = command.ExecuteReader ();
 		while(reader.Read()) {
-			Debug.Log ("Hello");
 			questions[count,0] = reader.GetString(0);
 			questions[count,1] = reader.GetString(1);
 			questions[count,2] = reader.GetString(2);
 			count++;
 		}
+		reader.Close ();
 		return questions;
 	}
 }

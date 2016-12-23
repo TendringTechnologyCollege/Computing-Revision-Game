@@ -12,7 +12,7 @@ public class QuizController : MonoBehaviour {
 	private string questionsString;
 
 	void Start () {
-		questions = DatabaseScript.FindTopicQuestions (7);
+		questions = DatabaseScript.findTopicQuestions (7);
 		questionsString = "";
 		Debug.Log (questions.Length);
 		for(int i=0;i<(questions.Length / 3);i++) {
@@ -21,6 +21,7 @@ public class QuizController : MonoBehaviour {
 			questionsString = questionsString + "A: " + questions [i, 2] + "\n";
 		}
 		text.text = questionsString;
+		SceneManager.LoadScene ("Scene_StudentMode", LoadSceneMode.Additive);
 	}
 
 	void Update () {
