@@ -64,4 +64,17 @@ public class MySQLconnector : MonoBehaviour {
 		reader.Close ();
 		return questions;
 	}
+
+	public bool existCheck (string studentID) {
+		query = "SELECT student.studentID FROM student;";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader();
+		while (reader.Read ()) {
+			if (studentID == reader.GetString(0)) {
+				return true;
+			}
+		}
+		return false;
+
+	}
 }

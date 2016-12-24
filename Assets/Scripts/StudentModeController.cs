@@ -16,8 +16,12 @@ public class StudentModeController : MonoBehaviour {
 	public Slider playerSilder;
 	public Image playerBackground;
 	public Text playerHealthText;
+	public Slider enemySilder;
+	public Image enemyBackground;
+	public Text enemyHealthText;
 
 	private Player player;
+	private string playerID;
 	private bool enter; 																// Boolean Key Variables for interactivity 
 	private bool space;
 	private bool iKey;
@@ -29,16 +33,18 @@ public class StudentModeController : MonoBehaviour {
 	private bool[] directions;
 	private string[,] questions;
 	private Camera camera;
+	private int playerHealth;
+	private int playerAttack;
+	private int playerDefence;
+	private int enemyHealth;
 
 	class Character {
-		private int health;
 		private Sprite characterSprite;
 		private Material characterMaterial;
 		private GameObject instance;
 		private Rigidbody rigidbody;
 		private SpriteRenderer spriteRenderer;
 		public Character(Sprite sprite, string name, Material material) {				//Constructor for New Character
-			health = 100;
 			characterSprite = sprite;
 			characterMaterial = material;
 			instance = new GameObject(name);											//Creates a new game object for the character
@@ -51,12 +57,6 @@ public class StudentModeController : MonoBehaviour {
 			spriteRenderer.sprite = characterSprite;
 			spriteRenderer.material = material;
 		}
-		public void setHealth(int currentHealth) {										//Setter and Getter for Health
-			health = currentHealth;
-		}
-		public int getHealth() {
-			return health;
-		}
 		public void move(float x, float y) {
 			rigidbody.position = new Vector3 (x, y, 0f);
 		}
@@ -66,14 +66,25 @@ public class StudentModeController : MonoBehaviour {
 		public void scaler(float scale) {
 			instance.transform.localScale = new Vector3 (scale, scale, 1);
 		}
+		public void destroy() {
+			Destroy (instance);
+		}
 	}
 
 	class Player : Character {															//Player class inheriting character
+		private int health;
 		private int attack;
 		private int defence;
 		public Player (Sprite sprite, string name, Material material) : base(sprite,name, material) {
+			health = 100;
 			attack = 0;
 			defence = 0;
+		}
+		public void setHealth(int currentHealth) {										//Setter and Getter for Health
+			health = currentHealth;
+		}
+		public int getHealth() {
+			return health;
 		}
 		public void setAttack(int newAttack) {
 			attack = newAttack;
@@ -136,15 +147,63 @@ public class StudentModeController : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.RightArrow)) {
 			directions[3] = true;
 		}
-		playerHealthText.text = player.getHealth ().ToString() + " / 100";
-		playerSilder.value = player.getHealth ();
+		playerHealth = player.getHealth();
+		playerAttack = player.getAttack ();
+		playerDefence = player.getDefence ();
+		playerHealthText.text = playerHealth.ToString() + " / 100";
+		playerSilder.value = playerHealth;
 	}
 
 	public IEnumerator gameLoop () {
 		player = new Player (playerSprite,"Player",playerMaterial);
 		gridPosition = new int[2] {0,0};
 		directions = new bool[4] { false, false, false, false };
+		populate ();
+		questionText.gameObject.SetActive (true);
+		inputField.gameObject.SetActive (true);
+		quizBackground.gameObject.SetActive (true);
+		enter = false;
+		questionText.text = "Please enter you candidate number";
+		while (enter == false) {
+			yield return null;
+		}
+		playerID = inputField.text;
+		if (databaseScript.existCheck (playerID) == true) {
+			Debug.Log ("Found");
+		} else {
+			Debug.Log ("Not Found");
+		}
+		while (!gameOver) {
+			int x = gridPosition [0];
+			int y = gridPosition [1];
+			if (quizArray [x,y] != null) {
+				zoomIn ();
+				quizArray [x, y].scaler (0.3f);
+				quizArray [x, y].move (x+0.3f,y+0.3f);
+				player.scaler (0.3f);
+				player.move (x-0.3f,y-0.05f);
+				int topicNumber = quizArray [x, y].getTopicNumber();
+				yield return StartCoroutine (runQuiz (topicNumber));
+				zoomOut ();
+				quizArray [x, y].destroy ();
+				quizArray [x, y] = null;
+				player.scaler (1f);
+				player.move (x, y);
+			} else if (itemArray [gridPosition [0],gridPosition [1]] != 0) {
+				
+			} else if (iKey) {
+				
+			}
+			yield return StartCoroutine (mover ());
+			yield return null;
+		}
+		yield return null;
+	}
+
+	public void populate () {
 		int randomNumber;
+		int x = gridPosition [0];
+		int y = gridPosition [1];
 		for (int i=0;i<5;i++) {
 			for (int j=0;j<5;j++) {
 				randomNumber = Random.Range (1,12);
@@ -159,28 +218,10 @@ public class StudentModeController : MonoBehaviour {
 				}
 			}
 		}
-		quizArray [0,0] = null;
-		while (!gameOver) {
-			int x = gridPosition [0];
-			int y = gridPosition [1];
-			if (quizArray [x,y] != null) {
-				zoomIn (x, y);
-				quizArray [x, y].scaler (0.3f);
-				quizArray [x, y].move (x+0.3f,y+0.3f);
-				player.scaler (0.3f);
-				player.move (x-0.3f,y-0.05f);
-				int topicNumber = quizArray [x, y].getTopicNumber();
-				yield return StartCoroutine (runQuiz (topicNumber));
-				zoomOut ();
-			} else if (itemArray [gridPosition [0],gridPosition [1]] != 0) {
-				
-			} else if (iKey) {
-				
-			}
-			yield return StartCoroutine (mover ());
-			yield return null;
+		if (quizArray [x, y] != null) {
+			quizArray [x, y].destroy ();
+			quizArray [x, y] = null;
 		}
-		yield return null;
 	}
 
 	public IEnumerator mover() {
@@ -219,11 +260,14 @@ public class StudentModeController : MonoBehaviour {
 		playerBackground.gameObject.SetActive (state);
 		playerSilder.gameObject.SetActive (state);
 		playerHealthText.gameObject.SetActive (state);
+		enemyBackground.gameObject.SetActive (state);
+		enemySilder.gameObject.SetActive (state);
+		enemyHealthText.gameObject.SetActive (state);
 	}
 
-	public void zoomIn(int x, int y) {
+	public void zoomIn() {
 		camera.orthographicSize = 0.5f;
-		camera.transform.position = new Vector3 (x,y,-10);
+		camera.transform.position = new Vector3 (gridPosition[0], gridPosition[1],-10);
 	} 
 
 	public void zoomOut() {
@@ -232,12 +276,13 @@ public class StudentModeController : MonoBehaviour {
 	}
 
 	public IEnumerator runQuiz(int topicNumber) {
+		enemyHealth = 100;
 		questions = databaseScript.findTopicQuestions (7);
 		int noQuestions = questions.Length / 3;
 		int count = 0;
-		int playerHealth;
-		int playerDefence;
 		toggleUI (true);
+		enemySilder.value = enemyHealth;
+		enemyHealthText.text = enemyHealth.ToString() + " / 100";
 		while (player.getHealth() > 0 && count < noQuestions) {
 			questionText.text = questions [count, 1];
 			enter = false;
@@ -246,10 +291,11 @@ public class StudentModeController : MonoBehaviour {
 			}
 			if (inputField.text.ToUpper() == questions [count, 2]) {
 				questionText.text = "Correct";
+				enemyHealth = enemyHealth - 10 - playerAttack;
+				enemySilder.value = enemyHealth;
+				enemyHealthText.text = enemyHealth.ToString() + " / 100";
 			} else {
 				questionText.text = "Incorrect";
-				playerHealth = player.getHealth();
-				playerDefence = player.getDefence ();
 				player.setHealth (playerHealth + playerDefence - 10);
 			}
 			inputField.text = string.Empty;
