@@ -51,7 +51,7 @@ public class MySQLconnector : MonoBehaviour {
 		while (reader.Read ()) {
 			count++;
 		}
-		string[,] questions = new string[count,3];
+		string[,] questions = new string[count,4];
 		count = 0;
 		reader.Close ();
 		reader = command.ExecuteReader ();
@@ -62,19 +62,57 @@ public class MySQLconnector : MonoBehaviour {
 			count++;
 		}
 		reader.Close ();
+		for (int i = 0; i < count; i++) {
+			questions [i, 3] = findDifficulty (questions[i,0]).ToString();
+		}
 		return questions;
 	}
-
+		
 	public bool existCheck (string studentID) {
-		query = "SELECT student.studentID FROM student;";
+		query = "SELECT studentID FROM student;";
 		command = new MySqlCommand (query, connection);
 		reader = command.ExecuteReader();
 		while (reader.Read ()) {
 			if (studentID == reader.GetString(0)) {
+				reader.Close ();
 				return true;
 			}
 		}
+		reader.Close ();
 		return false;
+	}
 
+	public void newStudent (string studentID, string firstName, string lastName, string studentClass) {
+		query = "INSERT INTO student (studentID, firstName, lastName, _classID) VALUES (" + studentID +", '"+ firstName +"', '"+ lastName +"', '" + studentClass +"');";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader ();
+		reader.Close ();
+	}
+
+	public void newAnswerInstance (string studentID, bool correct, string questionID) {
+		query = "INSERT INTO answerInstance (correct, _studentID, _questionID) VALUES ("+ correct +", "+ studentID +", "+ questionID +");";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader ();
+		reader.Close ();
+	}
+
+	public float findDifficulty (string questionID) {
+		float correct = 0;
+		float total = 0;
+		query = "SELECT correct FROM answerinstance WHERE _questionID = "+ questionID +";";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader();
+		while (reader.Read ()) {
+			if (reader.GetString (0) == "True") {
+				correct++;
+			}
+			total++;
+		}
+		reader.Close ();
+		if (total > 0) {
+			return correct / total;
+		} else {
+			return 0;	
+		}
 	}
 }

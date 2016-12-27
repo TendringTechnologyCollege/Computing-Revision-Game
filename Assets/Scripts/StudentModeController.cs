@@ -22,6 +22,7 @@ public class StudentModeController : MonoBehaviour {
 
 	private Player player;
 	private string playerID;
+	private string playerExamLevel;
 	private bool enter; 																// Boolean Key Variables for interactivity 
 	private bool space;
 	private bool iKey;
@@ -159,20 +160,7 @@ public class StudentModeController : MonoBehaviour {
 		gridPosition = new int[2] {0,0};
 		directions = new bool[4] { false, false, false, false };
 		populate ();
-		questionText.gameObject.SetActive (true);
-		inputField.gameObject.SetActive (true);
-		quizBackground.gameObject.SetActive (true);
-		enter = false;
-		questionText.text = "Please enter you candidate number";
-		while (enter == false) {
-			yield return null;
-		}
-		playerID = inputField.text;
-		if (databaseScript.existCheck (playerID) == true) {
-			Debug.Log ("Found");
-		} else {
-			Debug.Log ("Not Found");
-		}
+		yield return StartCoroutine (login());
 		while (!gameOver) {
 			int x = gridPosition [0];
 			int y = gridPosition [1];
@@ -198,6 +186,42 @@ public class StudentModeController : MonoBehaviour {
 			yield return null;
 		}
 		yield return null;
+	}
+
+	public IEnumerator login () {
+		questionText.gameObject.SetActive (true);
+		inputField.gameObject.SetActive (true);
+		quizBackground.gameObject.SetActive (true);
+		enter = false;
+		questionText.text = "Please enter you candidate number: ";
+		while (enter == false) {
+			yield return null;
+		}
+		playerID = inputField.text;
+		if (databaseScript.existCheck (playerID) == false) {
+			questionText.text = "You are a new user, what class are you in?: ";
+			enter = false;
+			while (enter == false) {
+				yield return null;
+			}
+			string playerClass = inputField.text;
+			questionText.text = "What is your first name?: ";
+			enter = false;
+			while (enter == false) {
+				yield return null;
+			}
+			string playerFirstName = inputField.text;
+			questionText.text = "What is your last name?: ";
+			enter = false;
+			while (enter == false) {
+				yield return null;
+			}
+			string playerLastName = inputField.text;
+			databaseScript.newStudent (playerID, playerFirstName, playerLastName, playerClass);
+		}
+		questionText.gameObject.SetActive (false);
+		inputField.gameObject.SetActive (false);
+		quizBackground.gameObject.SetActive (false);
 	}
 
 	public void populate () {
@@ -278,25 +302,39 @@ public class StudentModeController : MonoBehaviour {
 	public IEnumerator runQuiz(int topicNumber) {
 		enemyHealth = 100;
 		questions = databaseScript.findTopicQuestions (7);
-		int noQuestions = questions.Length / 3;
+		int noQuestions = questions.Length / 4;
 		int count = 0;
 		toggleUI (true);
 		enemySilder.value = enemyHealth;
 		enemyHealthText.text = enemyHealth.ToString() + " / 100";
-		while (player.getHealth() > 0 && count < noQuestions) {
-			questionText.text = questions [count, 1];
+		int index = 0;
+		float difficulty;
+		bool[] askedQuestions = new bool[noQuestions];
+		while (playerHealth > 0 && count < noQuestions && enemyHealth > 0) {
+			difficulty = 1;
+			for (int i = 0; i < noQuestions; i++) {
+				if (float.Parse(questions[i, 3]) <= difficulty && askedQuestions[i] == null) {
+					Debug.Log (count);
+					index = i;
+					difficulty = float.Parse(questions [i, 3]);
+				}
+			} 
+			askedQuestions [index] = true;
+			questionText.text = questions [index, 1];
 			enter = false;
 			while (enter == false) {
 				yield return null;
 			}
-			if (inputField.text.ToUpper() == questions [count, 2]) {
+			if (inputField.text.ToUpper() == questions [index , 2]) {
 				questionText.text = "Correct";
 				enemyHealth = enemyHealth - 10 - playerAttack;
 				enemySilder.value = enemyHealth;
 				enemyHealthText.text = enemyHealth.ToString() + " / 100";
+				databaseScript.newAnswerInstance (playerID, true, questions[index,0]);
 			} else {
 				questionText.text = "Incorrect";
 				player.setHealth (playerHealth + playerDefence - 10);
+				databaseScript.newAnswerInstance (playerID, false, questions[index,0]);
 			}
 			inputField.text = string.Empty;
 			enter = false;
