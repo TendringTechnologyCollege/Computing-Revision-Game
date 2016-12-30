@@ -301,7 +301,7 @@ public class StudentModeController : MonoBehaviour {
 
 	public IEnumerator runQuiz(int topicNumber) {
 		enemyHealth = 100;
-		questions = databaseScript.findTopicQuestions (7);
+		questions = databaseScript.findTopicQuestions (2);
 		int noQuestions = questions.Length / 4;
 		int count = 0;
 		toggleUI (true);
@@ -313,8 +313,7 @@ public class StudentModeController : MonoBehaviour {
 		while (playerHealth > 0 && count < noQuestions && enemyHealth > 0) {
 			difficulty = 1;
 			for (int i = 0; i < noQuestions; i++) {
-				if (float.Parse(questions[i, 3]) <= difficulty && askedQuestions[i] == null) {
-					Debug.Log (count);
+				if (float.Parse(questions[i, 3]) <= difficulty && askedQuestions[i] != true) {
 					index = i;
 					difficulty = float.Parse(questions [i, 3]);
 				}
@@ -322,6 +321,7 @@ public class StudentModeController : MonoBehaviour {
 			askedQuestions [index] = true;
 			questionText.text = questions [index, 1];
 			enter = false;
+			Debug.Log(questions[index, 1] + " " + questions[index, 3]);
 			while (enter == false) {
 				yield return null;
 			}
