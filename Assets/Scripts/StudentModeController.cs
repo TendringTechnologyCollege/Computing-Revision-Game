@@ -9,6 +9,8 @@ public class StudentModeController : MonoBehaviour {
 	public Material playerMaterial;
 	public Sprite enemySprite;
 	public Material enemyMaterial;
+	public Sprite itemSprite;
+	public Material itemMaterial;
 	public MySQLconnector databaseScript;
 	public InputField inputField;
 	public Text questionText;
@@ -22,14 +24,14 @@ public class StudentModeController : MonoBehaviour {
 
 	private Player player;
 	private string playerID;
-	private string playerExamLevel;
+	private bool playerIsALevel;
 	private bool enter; 																// Boolean Key Variables for interactivity 
 	private bool space;
 	private bool iKey;
 	private bool move;
 	private bool gameOver;
 	private Quiz[,] quizArray;															//Arrays for populating the game map with items and quizzes
-	private int[,] itemArray;
+	private Item[,] itemArray;
 	private int[] gridPosition; 														//Arrays for movement
 	private bool[] directions;
 	private string[,] questions;
@@ -39,15 +41,15 @@ public class StudentModeController : MonoBehaviour {
 	private int playerDefence;
 	private int enemyHealth;
 
-	class Character {
-		private Sprite characterSprite;
-		private Material characterMaterial;
+	class Object {
+		private Sprite objectSprite;
+		private Material objectMaterial;
 		private GameObject instance;
 		private Rigidbody rigidbody;
 		private SpriteRenderer spriteRenderer;
-		public Character(Sprite sprite, string name, Material material) {				//Constructor for New Character
-			characterSprite = sprite;
-			characterMaterial = material;
+		public Object (Sprite sprite, string name, Material material) {				//Constructor for New Character
+			objectSprite = sprite;
+			objectMaterial = material;
 			instance = new GameObject(name);											//Creates a new game object for the character
 			instance.AddComponent<SpriteRenderer> ();
 			instance.AddComponent<Rigidbody> ();
@@ -55,8 +57,8 @@ public class StudentModeController : MonoBehaviour {
 			rigidbody.isKinematic = true;
 			rigidbody.useGravity = false;
 			spriteRenderer =  instance.GetComponent<SpriteRenderer>();
-			spriteRenderer.sprite = characterSprite;
-			spriteRenderer.material = material;
+			spriteRenderer.sprite = objectSprite;
+			spriteRenderer.material = objectMaterial;
 		}
 		public void move(float x, float y) {
 			rigidbody.position = new Vector3 (x, y, 0f);
@@ -72,7 +74,7 @@ public class StudentModeController : MonoBehaviour {
 		}
 	}
 
-	class Player : Character {															//Player class inheriting character
+	class Player : Object {																//Player class inheriting character
 		private int health;
 		private int attack;
 		private int defence;
@@ -101,7 +103,7 @@ public class StudentModeController : MonoBehaviour {
 		}
 	}
 
-	class Quiz : Character {
+	class Quiz : Object {
 		private int topicNumber;
 		public Quiz (int _topicNumber, Sprite sprite, string name, Material material) : base (sprite, name, material) {
 			topicNumber = _topicNumber;
@@ -109,6 +111,15 @@ public class StudentModeController : MonoBehaviour {
 		public int getTopicNumber () {
 			return topicNumber;
 		}
+	}
+
+	class Item : Object {
+		private int effect;
+		private int type;
+		public Item (int _effect, int _type, Sprite sprite, string name, Material material) : base (sprite, name, material) {
+			effect = _effect;
+			type = _type;
+		}	
 	}
 		
 	void Start () {
@@ -118,7 +129,7 @@ public class StudentModeController : MonoBehaviour {
 		move = false;
 		gameOver = false;
 		quizArray = new Quiz[5,5];
-		itemArray = new int[5,5];
+		itemArray = new Item[5,5];
 		gridPosition = new int[2];
 		directions = new bool[4];
 		camera = this.GetComponent<Camera> ();
@@ -177,9 +188,11 @@ public class StudentModeController : MonoBehaviour {
 				quizArray [x, y] = null;
 				player.scaler (1f);
 				player.move (x, y);
-			} else if (itemArray [gridPosition [0],gridPosition [1]] != 0) {
+			} 
+			if (itemArray [gridPosition [0],gridPosition [1]] != null) {
 				
-			} else if (iKey) {
+			}
+			if (iKey) {
 				
 			}
 			yield return StartCoroutine (mover ());
@@ -219,6 +232,7 @@ public class StudentModeController : MonoBehaviour {
 			string playerLastName = inputField.text;
 			databaseScript.newStudent (playerID, playerFirstName, playerLastName, playerClass);
 		}
+		playerIsALevel = databaseScript.isAlevel(playerID);
 		questionText.gameObject.SetActive (false);
 		inputField.gameObject.SetActive (false);
 		quizBackground.gameObject.SetActive (false);
@@ -234,17 +248,24 @@ public class StudentModeController : MonoBehaviour {
 				if (randomNumber > 6) {
 					quizArray [i, j] = new Quiz (randomNumber - 6, enemySprite, "Enemy", enemyMaterial);
 					quizArray [i, j].scaler (0.3f);
-					quizArray [i, j].move (i,j);
+					quizArray [i, j].move (i,j+0.2f);
 				}
-				randomNumber = Random.Range (0,30);
-				if (randomNumber > 9) {
-					itemArray [i,j] = randomNumber - 10;
+				randomNumber = Random.Range (1,34);
+				if (randomNumber > 17) {
+					string[] newItem = databaseScript.findItem (randomNumber - 17);
+					itemArray [i, j] = new Item (int.Parse(newItem[1]), int.Parse(newItem[2]), itemSprite, newItem[0], itemMaterial);
+					itemArray [i, j].scaler (0.3f);
+					itemArray [i, j].move (i, j-0.2f);
 				}
 			}
 		}
 		if (quizArray [x, y] != null) {
 			quizArray [x, y].destroy ();
 			quizArray [x, y] = null;
+		}
+		if (itemArray [x, y] != null) {
+			itemArray [x, y].destroy ();
+			itemArray [x, y] = null;
 		}
 	}
 
@@ -301,7 +322,11 @@ public class StudentModeController : MonoBehaviour {
 
 	public IEnumerator runQuiz(int topicNumber) {
 		enemyHealth = 100;
-		questions = databaseScript.findTopicQuestions (2);
+		if (playerIsALevel == true) {
+			questions = databaseScript.findTopicQuestions (topicNumber + 6);	
+		} else {
+			questions = databaseScript.findTopicQuestions (topicNumber);
+		}
 		int noQuestions = questions.Length / 4;
 		int count = 0;
 		toggleUI (true);

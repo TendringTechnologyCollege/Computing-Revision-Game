@@ -42,6 +42,20 @@ public class MySQLconnector : MonoBehaviour {
 		}
 	}
 
+	public string[] findItem (int itemID) {
+		string[] item = new string[3];
+		query = "SELECT * FROM item WHERE itemID =" + itemID;
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader ();
+		while (reader.Read()) {
+			item [0] = reader.GetString (1);
+			item [1] = reader.GetString (2);
+			item [2] = reader.GetString (3);
+		}
+		reader.Close ();
+		return item;
+	} 
+
 	public string[,] findTopicQuestions (int topicNo) {
 		query = "SELECT question.questionID, question.questionText, " +
 			"question.answer FROM question WHERE question._topicID =" + topicNo;
@@ -114,5 +128,21 @@ public class MySQLconnector : MonoBehaviour {
 		} else {
 			return 0;	
 		}
+	}
+
+	public bool isAlevel (string playerID) {
+		query = "SELECT student.studentID, class._examID FROM student INNER JOIN class ON student._classID = class.classID;";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader();
+		while (reader.Read ()) {
+			if (reader.GetString (0) == playerID) {
+				if (reader.GetString(1) == "2") {
+					reader.Close ();
+					return true;
+				}
+			}
+		}
+		reader.Close ();
+		return false;
 	}
 }
