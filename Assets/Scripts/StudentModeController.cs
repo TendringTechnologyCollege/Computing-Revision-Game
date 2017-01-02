@@ -40,6 +40,7 @@ public class StudentModeController : MonoBehaviour {
 	private int playerAttack;
 	private int playerDefence;
 	private int enemyHealth;
+	private Item[] inventory;
 
 	class Object {
 		private Sprite objectSprite;
@@ -119,7 +120,13 @@ public class StudentModeController : MonoBehaviour {
 		public Item (int _effect, int _type, Sprite sprite, string name, Material material) : base (sprite, name, material) {
 			effect = _effect;
 			type = _type;
-		}	
+		}
+		public int getEffect () {
+			return effect;
+		}
+		public int getType () {
+			return type;
+		}
 	}
 		
 	void Start () {
@@ -132,6 +139,7 @@ public class StudentModeController : MonoBehaviour {
 		itemArray = new Item[5,5];
 		gridPosition = new int[2];
 		directions = new bool[4];
+		inventory = new Item[16];
 		camera = this.GetComponent<Camera> ();
 		toggleUI (false);
 		StartCoroutine (gameLoop());
@@ -164,6 +172,13 @@ public class StudentModeController : MonoBehaviour {
 		playerDefence = player.getDefence ();
 		playerHealthText.text = playerHealth.ToString() + " / 100";
 		playerSilder.value = playerHealth;
+		int count = 0;
+		for (int i=0;i < inventory.Length; i++) {
+			if (inventory [i] != null) {
+				inventory [i].move (count%4 + 7.25f, 3.5f - count/4*1f);
+				count++;
+			}
+		}
 	}
 
 	public IEnumerator gameLoop () {
@@ -176,7 +191,7 @@ public class StudentModeController : MonoBehaviour {
 			int x = gridPosition [0];
 			int y = gridPosition [1];
 			if (quizArray [x,y] != null) {
-				zoomIn ();
+				zoomIn (x, y);
 				quizArray [x, y].scaler (0.3f);
 				quizArray [x, y].move (x+0.3f,y+0.3f);
 				player.scaler (0.3f);
@@ -190,10 +205,18 @@ public class StudentModeController : MonoBehaviour {
 				player.move (x, y);
 			} 
 			if (itemArray [gridPosition [0],gridPosition [1]] != null) {
-				
+				for (int i=0; i<inventory.Length; i++) {
+					if (inventory[i] == null) {
+						inventory [i] = itemArray [x, y];
+						break;
+					}
+				}
+				itemArray [x, y] = null;
 			}
 			if (iKey) {
-				
+				zoomIn (8, 2);
+				yield return StartCoroutine (runInventory());
+				zoomOut ();
 			}
 			yield return StartCoroutine (mover ());
 			yield return null;
@@ -310,14 +333,18 @@ public class StudentModeController : MonoBehaviour {
 		enemyHealthText.gameObject.SetActive (state);
 	}
 
-	public void zoomIn() {
+	public void zoomIn(int x, int y) {
 		camera.orthographicSize = 0.5f;
-		camera.transform.position = new Vector3 (gridPosition[0], gridPosition[1],-10);
+		camera.transform.position = new Vector3 (x, y, -10);
 	} 
 
 	public void zoomOut() {
 		camera.orthographicSize = 2.5f;
 		camera.transform.position = new Vector3 (2,2,-10);
+	}
+
+	public void inventoryZoom () {
+		
 	}
 
 	public IEnumerator runQuiz(int topicNumber) {
@@ -370,6 +397,10 @@ public class StudentModeController : MonoBehaviour {
 			yield return null;
 		}
 		toggleUI (false);
+		yield return null;
+	}
+
+	public IEnumerator runInventory () {
 		yield return null;
 	}
 }
