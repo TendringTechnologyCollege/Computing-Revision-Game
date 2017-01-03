@@ -5,14 +5,19 @@ using UnityEngine.SceneManagement;
 
 public class StudentModeController : MonoBehaviour {
 
-	public Sprite playerSprite;
+	public Sprite playerSprite;						// Passed to the Script: Player
 	public Material playerMaterial;
-	public Sprite enemySprite;
+
+	public Sprite enemySprite; 						// Passed to the Script: Quizzes
 	public Material enemyMaterial;
-	public Sprite itemSprite;
+
+	public Sprite itemSprite; 						// Passed to the Script: Items
 	public Material itemMaterial;
-	public MySQLconnector databaseScript;
-	public InputField inputField;
+	public GameObject itemOutlinePrefab;
+
+	public MySQLconnector databaseScript; 			// Passed to the Script: Database
+
+	public InputField inputField; 					// Passed to the Script: UI 
 	public Text questionText;
 	public Image quizBackground;
 	public Slider playerSilder;
@@ -22,25 +27,33 @@ public class StudentModeController : MonoBehaviour {
 	public Image enemyBackground;
 	public Text enemyHealthText;
 
-	private Player player;
+
+
+	private Player player; 							// Created by the script: Player
 	private string playerID;
 	private bool playerIsALevel;
-	private bool enter; 																// Boolean Key Variables for interactivity 
-	private bool space;
-	private bool iKey;
-	private bool move;
-	private bool gameOver;
-	private Quiz[,] quizArray;															//Arrays for populating the game map with items and quizzes
-	private Item[,] itemArray;
-	private int[] gridPosition; 														//Arrays for movement
-	private bool[] directions;
-	private string[,] questions;
-	private Camera camera;
 	private int playerHealth;
 	private int playerAttack;
 	private int playerDefence;
+
+	private bool enter;								// Created by the script: Game control								 
+	private bool space;
+	private bool escape;
+	private bool move;
+	private bool gameOver;
+	private int[] gridPosition;
+	private bool[] directions;
+	private Camera camera;
+
+	private Quiz[,] quizArray;						// Created by the script: Quizzes
+	private string[,] questions;
 	private int enemyHealth;
+
+	private Item[,] itemArray; 						// Created by the script: Items
 	private Item[] inventory;
+	private GameObject itemOutline;
+	private int[] importantItems;
+	private int focusItem;
 
 	class Object {
 		private Sprite objectSprite;
@@ -132,7 +145,7 @@ public class StudentModeController : MonoBehaviour {
 	void Start () {
 		enter = false;
 		space = false;
-		iKey = false;
+		escape = false;
 		move = false;
 		gameOver = false;
 		quizArray = new Quiz[5,5];
@@ -140,7 +153,10 @@ public class StudentModeController : MonoBehaviour {
 		gridPosition = new int[2];
 		directions = new bool[4];
 		inventory = new Item[16];
+		importantItems = new int[4];
+		focusItem = 0;
 		camera = this.GetComponent<Camera> ();
+		itemOutline = Instantiate (itemOutlinePrefab, new Vector3 (7.25f ,3.5f, 0f), Quaternion.identity) as GameObject;
 		toggleUI (false);
 		StartCoroutine (gameLoop());
 	}
@@ -152,8 +168,8 @@ public class StudentModeController : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			space = true;
 		}
-		if (Input.GetKeyDown (KeyCode.I)) {
-			iKey = true;
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			escape = true;
 		}
 		if (Input.GetKeyDown (KeyCode.UpArrow)) {
 			directions [0] = true;
@@ -177,6 +193,9 @@ public class StudentModeController : MonoBehaviour {
 			if (inventory [i] != null) {
 				inventory [i].move (count%4 + 7.25f, 3.5f - count/4*1f);
 				count++;
+				if (i == focusItem) {
+					
+				}
 			}
 		}
 	}
@@ -191,7 +210,7 @@ public class StudentModeController : MonoBehaviour {
 			int x = gridPosition [0];
 			int y = gridPosition [1];
 			if (quizArray [x,y] != null) {
-				zoomIn (x, y);
+				zoomIn (x, y, 0.5f);
 				quizArray [x, y].scaler (0.3f);
 				quizArray [x, y].move (x+0.3f,y+0.3f);
 				player.scaler (0.3f);
@@ -213,13 +232,21 @@ public class StudentModeController : MonoBehaviour {
 				}
 				itemArray [x, y] = null;
 			}
-			if (iKey) {
-				zoomIn (8, 2);
-				yield return StartCoroutine (runInventory());
-				zoomOut ();
+			directions = new bool[4] { false, false, false, false };
+			escape = false;
+			move = false;
+			while (move == false) {
+				if (escape) {
+					zoomIn (8, 2, 2.5f);
+					yield return StartCoroutine (runInventory());
+					zoomOut ();
+					escape = false;
+				}
+				if (directions[0] || directions[1] || directions[2] || directions[3]) {
+					yield return StartCoroutine (mover ());
+				}
+				yield return null;
 			}
-			yield return StartCoroutine (mover ());
-			yield return null;
 		}
 		yield return null;
 	}
@@ -295,8 +322,6 @@ public class StudentModeController : MonoBehaviour {
 	public IEnumerator mover() {
 		int x = gridPosition [0];
 		int y = gridPosition [1];
-		directions = new bool[4] {false,false,false,false};
-		move = false;
 		while (move == false) {
 			if (directions [0] == true && gridPosition [1] < 4) {
 				gridPosition [0] = x;
@@ -333,18 +358,14 @@ public class StudentModeController : MonoBehaviour {
 		enemyHealthText.gameObject.SetActive (state);
 	}
 
-	public void zoomIn(int x, int y) {
-		camera.orthographicSize = 0.5f;
+	public void zoomIn(int x, int y, float size) {
+		camera.orthographicSize = size;
 		camera.transform.position = new Vector3 (x, y, -10);
 	} 
 
 	public void zoomOut() {
 		camera.orthographicSize = 2.5f;
 		camera.transform.position = new Vector3 (2,2,-10);
-	}
-
-	public void inventoryZoom () {
-		
 	}
 
 	public IEnumerator runQuiz(int topicNumber) {
@@ -401,6 +422,49 @@ public class StudentModeController : MonoBehaviour {
 	}
 
 	public IEnumerator runInventory () {
+		escape = false;
+		while (escape == false) {
+			if (directions[0] || directions[1] || directions[2] || directions[3]) {
+				yield return StartCoroutine (inventoryMover ());
+			}
+			yield return null;	
+		}
+	}
+
+	public bool inventorySpace() {
+		bool space = false;
+		for (int i = 0; i < inventory.Length; i++) {
+			if (inventory [i] == null) {
+				space = true;
+			}
+		}
+		return space;
+	}
+
+	public IEnumerator inventoryMover() {
+		int x = gridPosition [0];
+		int y = gridPosition [1];
+		while (move == false) {
+			if (directions [0] == true && gridPosition [1] < 4) {
+				gridPosition [0] = x;
+				gridPosition [1] = y + 1;
+				move = true;
+			} else if (directions [1] == true && gridPosition [1] > 0) {
+				gridPosition [0] = x;
+				gridPosition [1] = y - 1;
+				move = true;
+			} else if (directions [2] == true && gridPosition [0] > 0) {
+				gridPosition [0] = x - 1;
+				gridPosition [1] = y;
+				move = true;
+			} else if (directions [3] == true && gridPosition [0] < 4) {
+				gridPosition [0] = x + 1;
+				gridPosition [1] = y;
+				move = true;
+			}
+			yield return null;
+		}
+		player.move(gridPosition[0],gridPosition[1]);
 		yield return null;
 	}
 }
