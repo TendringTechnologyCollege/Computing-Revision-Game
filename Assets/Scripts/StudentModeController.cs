@@ -53,7 +53,6 @@ public class StudentModeController : MonoBehaviour {
 	private Item[] inventory;
 	private GameObject itemOutline;
 	private int[] importantItems;
-	private int focusItem;
 
 	class Object {
 		private Sprite objectSprite;
@@ -143,21 +142,23 @@ public class StudentModeController : MonoBehaviour {
 	}
 		
 	void Start () {
-		enter = false;
+		enter = false;							// Initialise: Game control 
 		space = false;
 		escape = false;
 		move = false;
-		gameOver = false;
-		quizArray = new Quiz[5,5];
-		itemArray = new Item[5,5];
 		gridPosition = new int[2];
 		directions = new bool[4];
+		gameOver = false;
+		camera = this.GetComponent<Camera> ();
+		toggleUI (false);
+
+		quizArray = new Quiz[5,5];				// Initialise: Quizzes
+
+		itemArray = new Item[5,5]; 				// Initialise: Items
 		inventory = new Item[16];
 		importantItems = new int[4];
-		focusItem = 0;
-		camera = this.GetComponent<Camera> ();
-		itemOutline = Instantiate (itemOutlinePrefab, new Vector3 (7.25f ,3.5f, 0f), Quaternion.identity) as GameObject;
-		toggleUI (false);
+		importantItems [0] = 0;
+		itemOutline = Instantiate (itemOutlinePrefab, new Vector3 (7.25f, 3.5f, 0f), Quaternion.identity) as GameObject;
 		StartCoroutine (gameLoop());
 	}
 
@@ -192,10 +193,10 @@ public class StudentModeController : MonoBehaviour {
 		for (int i=0;i < inventory.Length; i++) {
 			if (inventory [i] != null) {
 				inventory [i].move (count%4 + 7.25f, 3.5f - count/4*1f);
-				count++;
-				if (i == focusItem) {
-					
+				if (i == importantItems[0]) {
+					itemOutline.transform.position = new Vector3 (count%4 + 7.25f, 3.5f - count/4*1f, 0f);
 				}
+				count++;
 			}
 		}
 	}
@@ -423,9 +424,13 @@ public class StudentModeController : MonoBehaviour {
 
 	public IEnumerator runInventory () {
 		escape = false;
+		directions = new bool[4] { false, false, false, false };
 		while (escape == false) {
 			if (directions[0] || directions[1] || directions[2] || directions[3]) {
+				move = false;
 				yield return StartCoroutine (inventoryMover ());
+				move = false;
+				directions = new bool[4] { false, false, false, false };
 			}
 			yield return null;	
 		}
@@ -442,29 +447,47 @@ public class StudentModeController : MonoBehaviour {
 	}
 
 	public IEnumerator inventoryMover() {
-		int x = gridPosition [0];
-		int y = gridPosition [1];
-		while (move == false) {
-			if (directions [0] == true && gridPosition [1] < 4) {
-				gridPosition [0] = x;
-				gridPosition [1] = y + 1;
-				move = true;
-			} else if (directions [1] == true && gridPosition [1] > 0) {
-				gridPosition [0] = x;
-				gridPosition [1] = y - 1;
-				move = true;
-			} else if (directions [2] == true && gridPosition [0] > 0) {
-				gridPosition [0] = x - 1;
-				gridPosition [1] = y;
-				move = true;
-			} else if (directions [3] == true && gridPosition [0] < 4) {
-				gridPosition [0] = x + 1;
-				gridPosition [1] = y;
-				move = true;
+		if (directions [0] == true) {
+			int count = 0;
+			for (int i = importantItems [0]; i >= 0; i--) {
+				if (inventory [i] != null) {
+					count++;
+					if (count == 5) {
+						importantItems [0] = i;
+					}
+				}
 			}
-			yield return null;
+		} else if (directions [1] == true) {
+			int count = 0;
+			for (int i = importantItems [0]; i < inventory.Length; i++) {
+				if (inventory [i] != null) {
+					count++;
+					if (count == 5) {
+						importantItems [0] = i;
+					}
+				}
+			}
+		} else if (directions [2] == true && importantItems [0] > 0) {
+			int count = 0;
+			for (int i = importantItems [0]; i >= 0; i--) {
+				if (inventory [i] != null) {
+					count++;
+					if (count == 2) {
+						importantItems [0] = i;
+					}
+				}
+			}
+		} else if (directions [3] == true) {
+			int count = 0;
+			for (int i = importantItems [0]; i < inventory.Length; i++) {
+				if (inventory [i] != null) {
+					count++;
+					if (count == 2) {
+						importantItems [0] = i;
+					}
+				}
+			}
 		}
-		player.move(gridPosition[0],gridPosition[1]);
 		yield return null;
 	}
 }
