@@ -6,13 +6,13 @@ using UnityEngine.SceneManagement;
 public class StudentModeController : MonoBehaviour {
 
 	public Sprite playerSprite;						// Passed to the Script: Player
-	public Material playerMaterial;
 
-	public Sprite enemySprite; 						// Passed to the Script: Quizzes
-	public Material enemyMaterial;
+	public Sprite[] mapSprites;						// Passed to the Script: Game Control
+	public GameObject[] map;
 
-	public Sprite itemSprite; 						// Passed to the Script: Items
-	public Material itemMaterial;
+	public Sprite[] enemySprites; 					// Passed to the Script: Quizzes
+
+	public Sprite[] itemSprites; 					// Passed to the Script: Items
 	public GameObject itemOutlinePrefab;
 
 	public MySQLconnector databaseScript; 			// Passed to the Script: Database
@@ -56,13 +56,11 @@ public class StudentModeController : MonoBehaviour {
 
 	class Object {
 		private Sprite objectSprite;
-		private Material objectMaterial;
 		private GameObject instance;
 		private Rigidbody rigidbody;
 		private SpriteRenderer spriteRenderer;
-		public Object (Sprite sprite, string name, Material material) {				//Constructor for New Character
+		public Object (Sprite sprite, string name) {									//Constructor for New Character
 			objectSprite = sprite;
-			objectMaterial = material;
 			instance = new GameObject(name);											//Creates a new game object for the character
 			instance.AddComponent<SpriteRenderer> ();
 			instance.AddComponent<Rigidbody> ();
@@ -71,7 +69,6 @@ public class StudentModeController : MonoBehaviour {
 			rigidbody.useGravity = false;
 			spriteRenderer =  instance.GetComponent<SpriteRenderer>();
 			spriteRenderer.sprite = objectSprite;
-			spriteRenderer.material = objectMaterial;
 		}
 		public void move(float x, float y) {
 			rigidbody.position = new Vector3 (x, y, 0f);
@@ -91,7 +88,7 @@ public class StudentModeController : MonoBehaviour {
 		private int health;
 		private int attack;
 		private int defence;
-		public Player (Sprite sprite, string name, Material material) : base(sprite,name, material) {
+		public Player (Sprite sprite, string name) : base(sprite, name) {
 			health = 100;
 			attack = 0;
 			defence = 0;
@@ -118,7 +115,7 @@ public class StudentModeController : MonoBehaviour {
 
 	class Quiz : Object {
 		private int topicNumber;
-		public Quiz (int _topicNumber, Sprite sprite, string name, Material material) : base (sprite, name, material) {
+		public Quiz (int _topicNumber, Sprite sprite, string name) : base (sprite, name) {
 			topicNumber = _topicNumber;
 		}
 		public int getTopicNumber () {
@@ -129,7 +126,7 @@ public class StudentModeController : MonoBehaviour {
 	class Item : Object {
 		private int effect;
 		private int type;
-		public Item (int _effect, int _type, Sprite sprite, string name, Material material) : base (sprite, name, material) {
+		public Item (int _effect, int _type, Sprite sprite, string name) : base (sprite, name) {
 			effect = _effect;
 			type = _type;
 		}
@@ -202,7 +199,7 @@ public class StudentModeController : MonoBehaviour {
 	}
 
 	public IEnumerator gameLoop () {
-		player = new Player (playerSprite,"Player",playerMaterial);
+		player = new Player (playerSprite,"Player");
 		gridPosition = new int[2] {0,0};
 		directions = new bool[4] { false, false, false, false };
 		populate ();
@@ -212,10 +209,9 @@ public class StudentModeController : MonoBehaviour {
 			int y = gridPosition [1];
 			if (quizArray [x,y] != null) {
 				zoomIn (x, y, 0.5f);
-				quizArray [x, y].scaler (0.3f);
 				quizArray [x, y].move (x+0.3f,y+0.3f);
-				player.scaler (0.3f);
-				player.move (x-0.3f,y-0.05f);
+				player.scaler (0.6f);
+				player.move (x-0.3f,y);
 				int topicNumber = quizArray [x, y].getTopicNumber();
 				yield return StartCoroutine (runQuiz (topicNumber));
 				zoomOut ();
@@ -297,15 +293,26 @@ public class StudentModeController : MonoBehaviour {
 			for (int j=0;j<5;j++) {
 				randomNumber = Random.Range (1,12);
 				if (randomNumber > 6) {
-					quizArray [i, j] = new Quiz (randomNumber - 6, enemySprite, "Enemy", enemyMaterial);
-					quizArray [i, j].scaler (0.3f);
+					int topic = randomNumber - 6;
+					randomNumber = Random.Range (0,enemySprites.Length);
+					quizArray [i, j] = new Quiz (topic, enemySprites[randomNumber], "Enemy");
+					quizArray [i, j].scaler (0.6f);
 					quizArray [i, j].move (i,j+0.2f);
+					randomNumber = Random.Range (0, mapSprites.Length);
+					SpriteRenderer sRenderer = map[i+j*5].GetComponent <SpriteRenderer> ();
+					sRenderer.sprite = mapSprites [randomNumber];
 				}
 				randomNumber = Random.Range (1,34);
 				if (randomNumber > 17) {
 					string[] newItem = databaseScript.findItem (randomNumber - 17);
-					itemArray [i, j] = new Item (int.Parse(newItem[1]), int.Parse(newItem[2]), itemSprite, newItem[0], itemMaterial);
-					itemArray [i, j].scaler (0.3f);
+					Sprite itemSprite = null;
+					for (int k=0; k<itemSprites.Length; k++) {
+						if (itemSprites [k].name == newItem [0] + "_0") {
+							itemSprite = itemSprites [k];
+						}
+					}
+					itemArray [i, j] = new Item (int.Parse(newItem[1]), int.Parse(newItem[2]), itemSprite, newItem[0]);
+					itemArray [i, j].scaler (0.6f);
 					itemArray [i, j].move (i, j-0.2f);
 				}
 			}
