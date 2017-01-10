@@ -53,6 +53,7 @@ public class StudentModeController : MonoBehaviour {
 	private Item[] inventory;
 	private GameObject itemOutline;
 	private int[] importantItems;
+	private Item[] equipped;
 
 	class Object {
 		private Sprite objectSprite;
@@ -88,10 +89,34 @@ public class StudentModeController : MonoBehaviour {
 		private int health;
 		private int attack;
 		private int defence;
+		private Sprite hatSprite;
+		private Sprite topSprite;
+		private Sprite weaponSprite;
+		private SpriteRenderer hatRenderer;
+		private SpriteRenderer topRenderer;
+		private SpriteRenderer weaponRenderer;
+		private GameObject hat;
+		private GameObject top;
+		private GameObject weapon;
 		public Player (Sprite sprite, string name) : base(sprite, name) {
 			health = 100;
 			attack = 0;
 			defence = 0;
+			hat = new GameObject("Hat");
+			hat.AddComponent<SpriteRenderer> ();
+			hatRenderer = hat.GetComponent<SpriteRenderer>();
+			top = new GameObject("Top");
+			top.AddComponent<SpriteRenderer> ();
+			topRenderer = top.GetComponent<SpriteRenderer>();
+			weapon = new GameObject("Weapon");
+			weapon.AddComponent<SpriteRenderer> ();
+			weaponRenderer = weapon.GetComponent<SpriteRenderer>();
+		}
+		public void move (float x, float y) {
+			base.move (x,y);
+			hat.transform.position = new Vector3 (x, y, 0f);
+			top.transform.position = new Vector3 (x, y, 0f);
+			weapon.transform.position = new Vector3 (x, y, 0f);
 		}
 		public void setHealth(int currentHealth) {										//Setter and Getter for Health
 			health = currentHealth;
@@ -110,6 +135,15 @@ public class StudentModeController : MonoBehaviour {
 		}
 		public int getDefence() {
 			return defence;
+		}
+		public void setHat (Sprite sprite) {
+			hatRenderer.sprite = sprite;
+		}
+		public void setTop (Sprite sprite) {
+			topRenderer.sprite = sprite;
+		}
+		public void setWeapon (Sprite sprite) {
+			weaponRenderer.sprite = sprite;
 		}
 	}
 
@@ -155,7 +189,9 @@ public class StudentModeController : MonoBehaviour {
 		inventory = new Item[16];
 		importantItems = new int[4];
 		importantItems [0] = 0;
-		itemOutline = Instantiate (itemOutlinePrefab, new Vector3 (7.25f, 3.5f, 0f), Quaternion.identity) as GameObject;
+		equipped = new Item[3];
+		itemOutline = Instantiate (itemOutlinePrefab, new Vector3 (8.25f, 3.5f, 0f), Quaternion.identity) as GameObject;
+
 		StartCoroutine (gameLoop());
 	}
 
@@ -189,11 +225,16 @@ public class StudentModeController : MonoBehaviour {
 		int count = 0;
 		for (int i=0;i < inventory.Length; i++) {
 			if (inventory [i] != null) {
-				inventory [i].move (count%4 + 7.25f, 3.5f - count/4*1f);
+				inventory [i].move (count%4 + 8.25f, 3.5f - count/4*1f);
 				if (i == importantItems[0]) {
-					itemOutline.transform.position = new Vector3 (count%4 + 7.25f, 3.5f - count/4*1f, 0f);
+					itemOutline.transform.position = new Vector3 (count%4 + 8.25f, 3.5f - count/4*1f, 0f);
 				}
 				count++;
+			}
+		}
+		for (int i = 0; i < equipped.Length; i++) {
+			if (equipped [i] != null) {
+				equipped [i].move (7f, 3.5f - i * 1.5f);
 			}
 		}
 	}
@@ -208,10 +249,11 @@ public class StudentModeController : MonoBehaviour {
 			int x = gridPosition [0];
 			int y = gridPosition [1];
 			if (quizArray [x,y] != null) {
-				zoomIn (x, y, 0.5f);
-				quizArray [x, y].move (x+0.3f,y+0.3f);
-				player.scaler (0.6f);
-				player.move (x-0.3f,y);
+				zoomIn (x, y, 0.375f);
+				quizArray [x, y].scaler (0.5f);
+				quizArray [x, y].move (x+0.2f,y+0.2f);
+				player.scaler (0.5f);
+				player.move (x-0.2f,y);
 				int topicNumber = quizArray [x, y].getTopicNumber();
 				yield return StartCoroutine (runQuiz (topicNumber));
 				zoomOut ();
@@ -234,7 +276,7 @@ public class StudentModeController : MonoBehaviour {
 			move = false;
 			while (move == false) {
 				if (escape) {
-					zoomIn (8, 2, 2.5f);
+					zoomIn (9, 2, 2.5f);
 					yield return StartCoroutine (runInventory());
 					zoomOut ();
 					escape = false;
@@ -431,6 +473,8 @@ public class StudentModeController : MonoBehaviour {
 
 	public IEnumerator runInventory () {
 		escape = false;
+		enter = false;
+		space = false;
 		directions = new bool[4] { false, false, false, false };
 		while (escape == false) {
 			if (directions[0] || directions[1] || directions[2] || directions[3]) {
@@ -439,8 +483,45 @@ public class StudentModeController : MonoBehaviour {
 				move = false;
 				directions = new bool[4] { false, false, false, false };
 			}
+			if (space) {
+				inventory [importantItems [0]].destroy ();
+				inventory [importantItems [0]] = null;
+				importantItems [0] = inventoryFoucusAdjust (importantItems [0]);
+				space = false;
+			}
+			if (enter) {
+				if (importantItems[0] != null) {
+					if (inventory [importantItems [0]].getType () == 0) {
+						player.setHealth (playerHealth + inventory [importantItems [0]].getEffect ());
+					} else if (inventory [importantItems [0]].getType () == 1) {
+						equipped [0] = inventory [importantItems [0]];
+					} else if (inventory [importantItems [0]].getType () == 2) {
+						equipped [1] = inventory [importantItems [0]];
+					} else if (inventory [importantItems [0]].getType () == 3) {
+						equipped [2] = inventory [importantItems [0]];
+					}
+					//inventory [importantItems [0]].destroy ();
+					inventory [importantItems [0]] = null;
+					importantItems [0] = inventoryFoucusAdjust (importantItems [0]);
+				}
+				enter = false;
+			}
 			yield return null;	
 		}
+	}
+
+	public int inventoryFoucusAdjust (int current) {
+		for (int i = current; i < inventory.Length; i++) {
+			if (inventory[i] != null && i != current) {
+				return i;
+			}
+		}
+		for (int i = current; i > 0; i--) {
+			if (inventory [i] != null && i != current) {
+				return i;
+			}
+		}
+		return 0;
 	}
 
 	public bool inventorySpace() {

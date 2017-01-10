@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 90c9dfc7916973948b73095165424163
-timeCreated: 1484080506
+guid: 6fd4570caacfc1d4cb4d32dd03eff8ce
+timeCreated: 1483957631
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: Item Outline_0
+    21300000: Gentleman Ghost_0
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -44,22 +44,22 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spriteBorder: {x: 3, y: 3, z: 3, w: 3}
-  spritePixelsToUnits: 22.5
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 35
   alphaIsTransparency: 1
   textureType: 8
   buildTargetSettings: []
   spriteSheet:
     sprites:
-    - name: Item Outline_0
+    - name: Gentleman Ghost_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 32
-        height: 19
-      alignment: 9
-      pivot: {x: 0.30118915, y: 0.49687076}
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
     outline: []
