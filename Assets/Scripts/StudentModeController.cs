@@ -83,6 +83,9 @@ public class StudentModeController : MonoBehaviour {
 		public void destroy() {
 			Destroy (instance);
 		}
+		public Sprite getSprite() {
+			return objectSprite;
+		}
 	}
 
 	class Player : Object {																//Player class inheriting character
@@ -95,6 +98,7 @@ public class StudentModeController : MonoBehaviour {
 		private SpriteRenderer hatRenderer;
 		private SpriteRenderer topRenderer;
 		private SpriteRenderer weaponRenderer;
+		private GameObject equipped;
 		private GameObject hat;
 		private GameObject top;
 		private GameObject weapon;
@@ -102,21 +106,35 @@ public class StudentModeController : MonoBehaviour {
 			health = 100;
 			attack = 0;
 			defence = 0;
+			equipped = new GameObject("Equipped");
 			hat = new GameObject("Hat");
 			hat.AddComponent<SpriteRenderer> ();
 			hatRenderer = hat.GetComponent<SpriteRenderer>();
+			hatRenderer.sortingLayerName = "Equipped Items";
+			hat.transform.parent = equipped.transform;
+			hat.transform.position = new Vector3 (0, 0.11f, 0f);
 			top = new GameObject("Top");
 			top.AddComponent<SpriteRenderer> ();
 			topRenderer = top.GetComponent<SpriteRenderer>();
+			topRenderer.sortingLayerName = "Equipped Items";
+			top.transform.parent = equipped.transform;
+			top.transform.position = new Vector3 (0.015f,-0.13f, 0f);
 			weapon = new GameObject("Weapon");
 			weapon.AddComponent<SpriteRenderer> ();
 			weaponRenderer = weapon.GetComponent<SpriteRenderer>();
+			weaponRenderer.sortingLayerName = "Equipped Items";
+			weaponRenderer.sortingOrder = 1;
+			weapon.transform.localScale = new Vector3 (0.6f,0.6f,1f);
+			weapon.transform.parent = equipped.transform;
+			weapon.transform.position = new Vector3 (0.19f, -0.1f, 0f);
 		}
 		public void move (float x, float y) {
 			base.move (x,y);
-			hat.transform.position = new Vector3 (x, y, 0f);
-			top.transform.position = new Vector3 (x, y, 0f);
-			weapon.transform.position = new Vector3 (x, y, 0f);
+			equipped.transform.position = new Vector3 (x,y,0f);
+		}
+		public void scaler (float scale) {
+			base.scaler (scale);
+			equipped.transform.localScale = new Vector3 (scale, scale, 1f);
 		}
 		public void setHealth(int currentHealth) {										//Setter and Getter for Health
 			health = currentHealth;
@@ -237,6 +255,7 @@ public class StudentModeController : MonoBehaviour {
 				equipped [i].move (7f, 3.5f - i * 1.5f);
 			}
 		}
+		//Debug.Log ("Health: "+player.getHealth()+" Attack: "+player.getAttack()+" Defence: "+player.getDefence());
 	}
 
 	public IEnumerator gameLoop () {
@@ -344,9 +363,10 @@ public class StudentModeController : MonoBehaviour {
 					SpriteRenderer sRenderer = map[i+j*5].GetComponent <SpriteRenderer> ();
 					sRenderer.sprite = mapSprites [randomNumber];
 				}
-				randomNumber = Random.Range (1,34);
-				if (randomNumber > 17) {
-					string[] newItem = databaseScript.findItem (randomNumber - 17);
+				int numberOfItems = databaseScript.findNumberOfItems ();
+				randomNumber = Random.Range (1,numberOfItems*2);
+				if (randomNumber > numberOfItems) {
+					string[] newItem = databaseScript.findItem (randomNumber - numberOfItems);
 					Sprite itemSprite = null;
 					for (int k=0; k<itemSprites.Length; k++) {
 						if (itemSprites [k].name == newItem [0] + "_0") {
@@ -444,7 +464,6 @@ public class StudentModeController : MonoBehaviour {
 			askedQuestions [index] = true;
 			questionText.text = questions [index, 1];
 			enter = false;
-			Debug.Log(questions[index, 1] + " " + questions[index, 3]);
 			while (enter == false) {
 				yield return null;
 			}
@@ -491,18 +510,31 @@ public class StudentModeController : MonoBehaviour {
 			}
 			if (enter) {
 				if (importantItems[0] != null) {
-					if (inventory [importantItems [0]].getType () == 0) {
+					if (inventory [importantItems [0]].getType () == 4) {
 						player.setHealth (playerHealth + inventory [importantItems [0]].getEffect ());
+						inventory [importantItems [0]].destroy ();
+						inventory [importantItems [0]] = null; 
 					} else if (inventory [importantItems [0]].getType () == 1) {
+						Item temp = equipped [0];
 						equipped [0] = inventory [importantItems [0]];
+						inventory[importantItems [0]] = temp;
+						player.setHat (equipped[0].getSprite());
 					} else if (inventory [importantItems [0]].getType () == 2) {
+						Item temp = equipped [1];
 						equipped [1] = inventory [importantItems [0]];
+						player.setDefence (inventory[importantItems[0]].getEffect());
+						inventory [importantItems [0]] = temp;
+						player.setTop (equipped[1].getSprite());
 					} else if (inventory [importantItems [0]].getType () == 3) {
+						Item temp = equipped [2];
 						equipped [2] = inventory [importantItems [0]];
+						player.setAttack (inventory[importantItems[0]].getEffect());
+						inventory [importantItems [0]] = temp;
+						player.setWeapon (equipped [2].getSprite ());
 					}
-					//inventory [importantItems [0]].destroy ();
-					inventory [importantItems [0]] = null;
-					importantItems [0] = inventoryFoucusAdjust (importantItems [0]);
+					if (importantItems != null) {
+						importantItems [0] = inventoryFoucusAdjust (importantItems [0]);
+					}
 				}
 				enter = false;
 			}

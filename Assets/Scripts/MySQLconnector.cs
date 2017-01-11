@@ -145,4 +145,16 @@ public class MySQLconnector : MonoBehaviour {
 		reader.Close ();
 		return false;
 	}
+
+	public int findNumberOfItems () {
+		query = "SELECT itemName FROM item;";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader();
+		int count = 0;
+		while (reader.Read ()) {
+			count++;
+		}
+		reader.Close ();
+		return count;
+	}
 }
