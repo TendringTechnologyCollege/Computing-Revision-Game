@@ -8,6 +8,7 @@ public class StudentModeController : MonoBehaviour {
 	public Sprite playerSprite;						// Passed to the Script: Player
 
 	public Sprite[] mapSprites;						// Passed to the Script: Game Control
+	public Sprite emptySprite;
 	public GameObject[] map;
 
 	public Sprite[] enemySprites; 					// Passed to the Script: Quizzes
@@ -26,6 +27,18 @@ public class StudentModeController : MonoBehaviour {
 	public Slider enemySilder;
 	public Image enemyBackground;
 	public Text enemyHealthText;
+	public Image attackOverhead;
+	public Image defenceOverhead;
+	public Image healthOverhead;
+	public Image scoreOverhead;
+	public Text attackOverheadText;
+	public Text defenceOverheadText;
+	public Text healthOverheadText;
+	public Text scoreOverheadText;
+	public Image popupBackground;
+	public Image popupItem;
+	public Text popupDetails;
+	public Text popupText;
 
 
 
@@ -35,6 +48,7 @@ public class StudentModeController : MonoBehaviour {
 	private int playerHealth;
 	private int playerAttack;
 	private int playerDefence;
+	private int score;
 
 	private bool enter;								// Created by the script: Game control								 
 	private bool space;
@@ -44,6 +58,8 @@ public class StudentModeController : MonoBehaviour {
 	private int[] gridPosition;
 	private bool[] directions;
 	private Camera camera;
+	private int mapQuizzes;
+	private int mapItems;
 
 	private Quiz[,] quizArray;						// Created by the script: Quizzes
 	private string[,] questions;
@@ -191,6 +207,8 @@ public class StudentModeController : MonoBehaviour {
 	}
 		
 	void Start () {
+		score = 0;
+
 		enter = false;							// Initialise: Game control 
 		space = false;
 		escape = false;
@@ -255,7 +273,10 @@ public class StudentModeController : MonoBehaviour {
 				equipped [i].move (7f, 3.5f - i * 1.5f);
 			}
 		}
-		//Debug.Log ("Health: "+player.getHealth()+" Attack: "+player.getAttack()+" Defence: "+player.getDefence());
+		attackOverheadText.text = "Attack: " + playerAttack.ToString();
+		defenceOverheadText.text = "Defence: " + playerDefence.ToString();
+		healthOverheadText.text = "Health: " + playerHealth.ToString();
+		scoreOverheadText.text = "Score: " + score; 
 	}
 
 	public IEnumerator gameLoop () {
@@ -280,8 +301,15 @@ public class StudentModeController : MonoBehaviour {
 				quizArray [x, y] = null;
 				player.scaler (1f);
 				player.move (x, y);
+				mapQuizzes--;
 			} 
 			if (itemArray [gridPosition [0],gridPosition [1]] != null) {
+				while (inventorySpace () == false) {
+					zoomIn (9, 2, 2.5f);
+					yield return StartCoroutine (runInventory());
+					zoomOut ();
+					yield return null;
+				}
 				for (int i=0; i<inventory.Length; i++) {
 					if (inventory[i] == null) {
 						inventory [i] = itemArray [x, y];
@@ -289,6 +317,10 @@ public class StudentModeController : MonoBehaviour {
 					}
 				}
 				itemArray [x, y] = null;
+				mapItems--;
+			}
+			if (mapQuizzes == 0 && mapItems == 0) {
+				populate ();
 			}
 			directions = new bool[4] { false, false, false, false };
 			escape = false;
@@ -350,18 +382,25 @@ public class StudentModeController : MonoBehaviour {
 		int randomNumber;
 		int x = gridPosition [0];
 		int y = gridPosition [1];
+		SpriteRenderer sRenderer;
+		mapQuizzes = 0;
+		mapItems = 0;
 		for (int i=0;i<5;i++) {
 			for (int j=0;j<5;j++) {
 				randomNumber = Random.Range (1,12);
 				if (randomNumber > 6) {
 					int topic = randomNumber - 6;
-					randomNumber = Random.Range (0,enemySprites.Length);
-					quizArray [i, j] = new Quiz (topic, enemySprites[randomNumber], "Enemy");
+					randomNumber = Random.Range (0, enemySprites.Length);
+					quizArray [i, j] = new Quiz (topic, enemySprites [randomNumber], "Enemy");
 					quizArray [i, j].scaler (0.6f);
-					quizArray [i, j].move (i,j+0.2f);
+					quizArray [i, j].move (i, j + 0.2f);
 					randomNumber = Random.Range (0, mapSprites.Length);
-					SpriteRenderer sRenderer = map[i+j*5].GetComponent <SpriteRenderer> ();
+					sRenderer = map [i + j * 5].GetComponent <SpriteRenderer> ();
 					sRenderer.sprite = mapSprites [randomNumber];
+					mapQuizzes++;
+				} else {
+					sRenderer = map [i + j * 5].GetComponent <SpriteRenderer> ();
+					sRenderer.sprite = emptySprite;
 				}
 				int numberOfItems = databaseScript.findNumberOfItems ();
 				randomNumber = Random.Range (1,numberOfItems*2);
@@ -376,17 +415,23 @@ public class StudentModeController : MonoBehaviour {
 					itemArray [i, j] = new Item (int.Parse(newItem[1]), int.Parse(newItem[2]), itemSprite, newItem[0]);
 					itemArray [i, j].scaler (0.6f);
 					itemArray [i, j].move (i, j-0.2f);
+					mapItems++;
 				}
 			}
 		}
 		if (quizArray [x, y] != null) {
 			quizArray [x, y].destroy ();
 			quizArray [x, y] = null;
+			mapQuizzes--;
 		}
 		if (itemArray [x, y] != null) {
 			itemArray [x, y].destroy ();
 			itemArray [x, y] = null;
+			mapItems--;
 		}
+		randomNumber = Random.Range (0, mapSprites.Length);
+		sRenderer = map[x + y * 5].GetComponent<SpriteRenderer>();
+		sRenderer.sprite = mapSprites [randomNumber];
 	}
 
 	public IEnumerator mover() {
@@ -426,6 +471,16 @@ public class StudentModeController : MonoBehaviour {
 		enemyBackground.gameObject.SetActive (state);
 		enemySilder.gameObject.SetActive (state);
 		enemyHealthText.gameObject.SetActive (state);
+		attackOverhead.gameObject.SetActive (!state);
+		defenceOverhead.gameObject.SetActive (!state);
+		healthOverhead.gameObject.SetActive (!state);
+		attackOverheadText.gameObject.SetActive (!state);
+		defenceOverheadText.gameObject.SetActive (!state);
+		healthOverheadText.gameObject.SetActive (!state);
+	}
+
+	public void togglePublicUI () {
+		
 	}
 
 	public void zoomIn(int x, int y, float size) {
@@ -434,8 +489,8 @@ public class StudentModeController : MonoBehaviour {
 	} 
 
 	public void zoomOut() {
-		camera.orthographicSize = 2.5f;
-		camera.transform.position = new Vector3 (2,2,-10);
+		camera.orthographicSize = 2.7f;
+		camera.transform.position = new Vector3 (2,2.23f,-10);
 	}
 
 	public IEnumerator runQuiz(int topicNumber) {
@@ -473,6 +528,7 @@ public class StudentModeController : MonoBehaviour {
 				enemySilder.value = enemyHealth;
 				enemyHealthText.text = enemyHealth.ToString() + " / 100";
 				databaseScript.newAnswerInstance (playerID, true, questions[index,0]);
+				score++;
 			} else {
 				questionText.text = "Incorrect";
 				player.setHealth (playerHealth + playerDefence - 10);
