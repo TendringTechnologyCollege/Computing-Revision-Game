@@ -76,9 +76,11 @@ public class StudentModeController : MonoBehaviour {
 		private GameObject instance;
 		private Rigidbody rigidbody;
 		private SpriteRenderer spriteRenderer;
+		private string objectName;
 		public Object (Sprite sprite, string name) {									//Constructor for New Character
+			objectName = name;
 			objectSprite = sprite;
-			instance = new GameObject(name);											//Creates a new game object for the character
+			instance = new GameObject(objectName);										//Creates a new game object for the character
 			instance.AddComponent<SpriteRenderer> ();
 			instance.AddComponent<Rigidbody> ();
 			rigidbody = instance.GetComponent<Rigidbody>();
@@ -101,6 +103,9 @@ public class StudentModeController : MonoBehaviour {
 		}
 		public Sprite getSprite() {
 			return objectSprite;
+		}
+		public string getName() {
+			return objectName;
 		}
 	}
 
@@ -218,6 +223,7 @@ public class StudentModeController : MonoBehaviour {
 		gameOver = false;
 		camera = this.GetComponent<Camera> ();
 		toggleUI (false);
+		togglePopupUI (false);
 
 		quizArray = new Quiz[5,5];				// Initialise: Quizzes
 
@@ -305,11 +311,27 @@ public class StudentModeController : MonoBehaviour {
 			} 
 			if (itemArray [gridPosition [0],gridPosition [1]] != null) {
 				while (inventorySpace () == false) {
-					zoomIn (9, 2, 2.5f);
-					yield return StartCoroutine (runInventory());
-					zoomOut ();
+					togglePopupUI (true);
+					popupItem.sprite = itemArray [gridPosition [0], gridPosition [1]].getSprite ();
+					string name = itemArray [gridPosition [0], gridPosition [1]].getName ();
+					string effect = itemArray [gridPosition [0], gridPosition [1]].getEffect ().ToString();
+					escape = false;
+					space = false;
+					while (escape == false && space == false) {
+						yield return null;
+					}
+					if (escape) {
+						zoomIn (9, 2, 2.5f);
+						yield return StartCoroutine (runInventory ());
+						zoomOut ();
+					} else if (space) {
+						itemArray [gridPosition [0], gridPosition [1]].destroy ();
+						itemArray [gridPosition [0], gridPosition [1]] = null;
+						break;
+					}
 					yield return null;
 				}
+				togglePopupUI (false);
 				for (int i=0; i<inventory.Length; i++) {
 					if (inventory[i] == null) {
 						inventory [i] = itemArray [x, y];
@@ -479,8 +501,11 @@ public class StudentModeController : MonoBehaviour {
 		healthOverheadText.gameObject.SetActive (!state);
 	}
 
-	public void togglePublicUI () {
-		
+	public void togglePopupUI (bool state) {
+		popupBackground.gameObject.SetActive (state);
+		popupItem.gameObject.SetActive (state);
+		popupDetails.gameObject.SetActive (state);
+		popupText.gameObject.SetActive (state);
 	}
 
 	public void zoomIn(int x, int y, float size) {
