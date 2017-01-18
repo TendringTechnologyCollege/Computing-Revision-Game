@@ -39,6 +39,9 @@ public class StudentModeController : MonoBehaviour {
 	public Image popupItem;
 	public Text popupDetails;
 	public Text popupText;
+	public Image endGameBackground;
+	public Text endGameText;
+	public Text endGameScoreText;
 
 
 
@@ -54,7 +57,6 @@ public class StudentModeController : MonoBehaviour {
 	private bool space;
 	private bool escape;
 	private bool move;
-	private bool gameOver;
 	private int[] gridPosition;
 	private bool[] directions;
 	private Camera camera;
@@ -159,6 +161,9 @@ public class StudentModeController : MonoBehaviour {
 		}
 		public void setHealth(int currentHealth) {										//Setter and Getter for Health
 			health = currentHealth;
+			if (health > 100) {
+				health = 100;
+			}
 		}
 		public int getHealth() {
 			return health;
@@ -220,7 +225,6 @@ public class StudentModeController : MonoBehaviour {
 		move = false;
 		gridPosition = new int[2];
 		directions = new bool[4];
-		gameOver = false;
 		camera = this.GetComponent<Camera> ();
 		toggleUI (false);
 		togglePopupUI (false);
@@ -291,7 +295,96 @@ public class StudentModeController : MonoBehaviour {
 		directions = new bool[4] { false, false, false, false };
 		populate ();
 		yield return StartCoroutine (login());
-		while (!gameOver) {
+		while (playerHealth > 0) {
+			directions = new bool[4] { false, false, false, false };
+			escape = false;
+			move = false;
+			while (move == false) {
+				if (escape) {
+					zoomIn (9, 2, 2.5f);
+					yield return StartCoroutine (runInventory());
+					zoomOut ();
+					escape = false;
+				}
+				if (directions[0] || directions[1] || directions[2] || directions[3]) {
+					yield return StartCoroutine (mover ());
+				}
+				yield return null;
+			}
+			int x = gridPosition [0];
+			int y = gridPosition [1];
+			if (itemArray [gridPosition [0],gridPosition [1]] != null) {
+				while (inventorySpace () == false) {
+					togglePopupUI (true);
+					popupItem.sprite = itemArray [gridPosition [0], gridPosition [1]].getSprite ();
+					string name = itemArray [gridPosition [0], gridPosition [1]].getName ();
+					string effect = itemArray [gridPosition [0], gridPosition [1]].getEffect ().ToString();
+					popupDetails.text = "Name: " + name + "   Strength: " + effect;
+					escape = false;
+					space = false;
+					while (escape == false && space == false) {
+						yield return null;
+					}
+					if (escape) {
+						zoomIn (9, 2, 2.5f);
+						togglePopupUI (false);
+						yield return StartCoroutine (runInventory ());
+						zoomOut ();
+						togglePopupUI (true);
+					} else if (space) {
+						itemArray [gridPosition [0], gridPosition [1]].destroy ();
+						itemArray [gridPosition [0], gridPosition [1]] = null;
+						break;
+					}
+					yield return null;
+				}
+				togglePopupUI (false);
+				for (int i=0; i<inventory.Length; i++) {
+					if (inventory[i] == null) {
+						inventory [i] = itemArray [x, y];
+						break;
+					}
+				}
+				itemArray [x, y] = null;
+				mapItems--;
+			}
+			if (quizArray [x,y] != null) {
+				zoomIn (x, y, 0.375f);
+				quizArray [x, y].scaler (0.5f);
+				quizArray [x, y].move (x+0.2f,y+0.2f);
+				player.scaler (0.5f);
+				player.move (x-0.2f,y);
+				int topicNumber = quizArray [x, y].getTopicNumber();
+				yield return StartCoroutine (runQuiz (topicNumber));
+				zoomOut ();
+				quizArray [x, y].destroy ();
+				quizArray [x, y] = null;
+				player.scaler (1f);
+				player.move (x, y);
+				mapQuizzes--;
+			} 
+			if (mapQuizzes == 0 && mapItems == 0) {
+				populate ();
+			}
+		}
+		endGame ();
+		yield return null;
+	}
+
+	public void endGame () {
+		endGameBackground.gameObject.SetActive (true);
+		endGameText.gameObject.SetActive (true);
+		endGameScoreText.gameObject.SetActive (true);
+		endGameScoreText.text = "Score: " + score;
+	}
+
+	/*/public IEnumerator gameLoop () {
+		player = new Player (playerSprite,"Player");
+		gridPosition = new int[2] {0,0};
+		directions = new bool[4] { false, false, false, false };
+		populate ();
+		yield return StartCoroutine (login());
+		while (playerHealth > 0) {
 			int x = gridPosition [0];
 			int y = gridPosition [1];
 			if (quizArray [x,y] != null) {
@@ -315,6 +408,7 @@ public class StudentModeController : MonoBehaviour {
 					popupItem.sprite = itemArray [gridPosition [0], gridPosition [1]].getSprite ();
 					string name = itemArray [gridPosition [0], gridPosition [1]].getName ();
 					string effect = itemArray [gridPosition [0], gridPosition [1]].getEffect ().ToString();
+					popupDetails.text = "Name: " + name + "   Strength: " + effect;
 					escape = false;
 					space = false;
 					while (escape == false && space == false) {
@@ -322,8 +416,10 @@ public class StudentModeController : MonoBehaviour {
 					}
 					if (escape) {
 						zoomIn (9, 2, 2.5f);
+						togglePopupUI (false);
 						yield return StartCoroutine (runInventory ());
 						zoomOut ();
+						togglePopupUI (true);
 					} else if (space) {
 						itemArray [gridPosition [0], gridPosition [1]].destroy ();
 						itemArray [gridPosition [0], gridPosition [1]] = null;
@@ -361,7 +457,7 @@ public class StudentModeController : MonoBehaviour {
 			}
 		}
 		yield return null;
-	}
+	} /*/
 
 	public IEnumerator login () {
 		questionText.gameObject.SetActive (true);
