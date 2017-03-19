@@ -157,4 +157,80 @@ public class MySQLconnector : MonoBehaviour {
 		reader.Close ();
 		return count;
 	}
+
+	public string findTopicName(int topicNumber) {
+		query = "SELECT topicName FROM topic WHERE topicID = " + topicNumber + ";";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader();
+		string topicName;
+		if (topicNumber < 7) {
+			topicName = "GCSE ";
+		} else {
+			topicName = "A-Level ";
+		}
+		while (reader.Read ()) {
+			topicName = topicName + reader.GetString (0);
+		}
+		reader.Close ();
+		return topicName;
+	}
+
+	public void deleteQuestion(string questionID) {
+		query = "DELETE FROM answerInstance WHERE _questionID = " + questionID + ";";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader();
+		reader.Close ();
+		query = "DELETE FROM question WHERE questionID = " + questionID + ";";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader();
+		reader.Close ();
+	}
+
+	public void updateQuestion (string questionText, string answer, string topicID,  string questionID) {
+		query = "UPDATE question SET questionText = '" + questionText +"', answer = '"+ answer +"', _topicID = '"+ topicID +"' WHERE questionID = " + questionID;
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader ();
+		reader.Close ();
+	}
+
+	public void addQuestion (string questionText, string answer, string topicID) {
+		query = "INSERT INTO question (questionText, answer, _topicID) VALUES ('"+questionText+"','"+answer+"',"+topicID+");";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader ();
+		reader.Close ();
+	}
+
+	public string[,] gatherResults () {
+		// Correct, Date, Student, Topic, Class of Student
+		query = "SELECT answerinstance.correct, answerinstance.date, answerinstance._studentID, question._topicID FROM answerinstance INNER JOIN question ON answerinstance._questionID = question.questionID;";
+		command = new MySqlCommand (query, connection);
+		reader = command.ExecuteReader();
+		int count = 0;
+		while (reader.Read ()) {
+			count++;
+		}
+		string[,] results = new string[count,5];
+		count = 0;
+		reader.Close ();
+		reader = command.ExecuteReader ();
+		while(reader.Read()) {
+			results[count,0] = reader.GetString(0);
+			results[count,1] = reader.GetString(1);
+			results[count,2] = reader.GetString(2);
+			results[count,3] = reader.GetString(3);
+			count++;
+		}
+		reader.Close ();
+		for (int i=0; i<results.Length / 4; i++) {
+			Debug.Log (i);
+			query = "SELECT _classID FROM student WHERE studentID = "+ results[i,1] +";";
+			command = new MySqlCommand (query, connection);
+			reader = command.ExecuteReader ();
+			while (reader.Read ()) {
+				results [i, 4] = reader.GetString (0);
+			}
+			reader.Close ();
+		}
+		return results;
+	}
 }

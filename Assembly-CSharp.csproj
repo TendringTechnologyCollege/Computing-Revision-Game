@@ -45,9 +45,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\InventoryController.cs" />
      <Compile Include="Assets\Scripts\MainMenuController.cs" />
+     <Compile Include="Assets\Scripts\Misc.cs" />
      <Compile Include="Assets\Scripts\MySQLconnector.cs" />
+     <Compile Include="Assets\Scripts\QuestionsController.cs" />
+     <Compile Include="Assets\Scripts\ResultsController.cs" />
+     <Compile Include="Assets\Scripts\StaffModeController.cs" />
      <Compile Include="Assets\Scripts\StudentModeController.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
@@ -63,6 +66,18 @@
  </Reference>
  <Reference Include="System.Drawing">
  <HintPath>C:/Users/Joe/Documents/Computing/A Level Project/Computing-Revision-Game/Assets/Plugins/System.Drawing.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Web.DataVisualization.Design">
+ <HintPath>C:/Users/Joe/Documents/Computing/A Level Project/Computing-Revision-Game/Assets/Plugins/System.Web.DataVisualization.Design.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Web.DataVisualization">
+ <HintPath>C:/Users/Joe/Documents/Computing/A Level Project/Computing-Revision-Game/Assets/Plugins/System.Web.DataVisualization.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Windows.Forms.DataVisualization.Design">
+ <HintPath>C:/Users/Joe/Documents/Computing/A Level Project/Computing-Revision-Game/Assets/Plugins/System.Windows.Forms.DataVisualization.Design.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Windows.Forms.DataVisualization">
+ <HintPath>C:/Users/Joe/Documents/Computing/A Level Project/Computing-Revision-Game/Assets/Plugins/System.Windows.Forms.DataVisualization.dll</HintPath>
  </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
